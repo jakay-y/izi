@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="IZI — Go Izi Baby. Graphic tees and raw layers, made on demand. Drop 001 live now.">
+<title>IZI — Go Izi Baby</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=general-sans@400,500,600&f[]=space-mono@400,700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400;1,9..144,500&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="assets/logo.png" type="image/png">
+</head>
+<body class="lock-scroll">
+
+  <!-- ================= LOGO BOOT LOADER (before intro) ================= -->
+  <div id="view-loader" aria-hidden="false">
+    <img class="loader-logo" src="assets/logo.png" alt="IZI">
+  </div>
+
+  <!-- ================= MAIN SITE ================= -->
+  <div id="view-site">
+    <nav id="siteNav" class="site-nav">
+      <div class="links">
+        <div class="nav-item has-dropdown">
+          <button type="button" class="nav-link" onclick="toggleMegaMenu(this)" aria-haspopup="true" aria-expanded="false">Shop <span class="chev">⌄</span></button>
+          <div class="mega-menu">
+            <div class="mega-col">
+              <a href="#" class="mega-link strong" onclick="goShop('All');return false;">All Products</a>
+              <div class="mega-sub active" data-key="Tops" onmouseenter="showFlyout(this,'Tops')">Tops <span class="chev-r">›</span></div>
+              <div class="mega-sub" data-key="Bottoms" onmouseenter="showFlyout(this,'Bottoms')">Bottoms <span class="chev-r">›</span></div>
+              <div class="mega-sub" data-key="Headwear" onmouseenter="showFlyout(this,'Headwear')">Headwear <span class="chev-r">›</span></div>
+              <div class="mega-sub" data-key="Accessories" onmouseenter="showFlyout(this,'Accessories')">Accessories <span class="chev-r">›</span></div>
+            </div>
+            <div class="mega-flyout active" data-key="Tops">
+              <a href="#" onclick="goShop('Tops','Tees');return false;">Tees</a>
+              <a href="#" onclick="goShop('Tops','Long Sleeves');return false;">Long Sleeves</a>
+              <a href="#" onclick="goShop('Tops','Hoodies');return false;">Hoodies</a>
+            </div>
+            <div class="mega-flyout" data-key="Bottoms">
+              <a href="#" onclick="goShop('Bottoms','Jeans');return false;">Jeans</a>
+              <a href="#" onclick="goShop('Bottoms','Cargos');return false;">Cargos</a>
+              <a href="#" onclick="goShop('Bottoms','Shorts');return false;">Shorts</a>
+            </div>
+            <div class="mega-flyout" data-key="Headwear">
+              <a href="#" onclick="goShop('Headwear','Caps');return false;">Caps</a>
+              <a href="#" onclick="goShop('Headwear','Visors');return false;">Visors</a>
+              <a href="#" onclick="goShop('Headwear','Beanies');return false;">Beanies</a>
+            </div>
+            <div class="mega-flyout" data-key="Accessories">
+              <a href="#" onclick="goShop('Accessories','Bags');return false;">Bags</a>
+              <a href="#" onclick="goShop('Accessories','Jewelry');return false;">Jewelry</a>
+            </div>
+          </div>
+        </div>
+        <a href="#manifesto" onclick="goToSection('manifesto');return false;">Journal</a>
+        <a href="#trust" onclick="goToSection('trust');return false;">Support</a>
+      </div>
+      <a class="brand-mark" href="#" aria-label="IZI home" onclick="goHome();return false;">
+        <img src="assets/logo.png" alt="IZI">
+      </a>
+      <div class="right">
+        <button type="button" class="nav-icon-btn desktop-only" onclick="openSearch()">Search</button>
+        <button type="button" class="nav-icon-btn bag-btn" onclick="openCart()" aria-label="Open bag">Bag <span class="bag-pill bag-count">0</span></button>
+        <button type="button" class="burger" aria-label="Open menu" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+
+    <section id="hero">
+      <div class="bgimg"><img src="assets/hero.jpg" alt="IZI model wearing the Go Izi Baby tee and red visor"></div>
+      <div class="tint"></div>
+      <div class="content">
+        <h1 class="hero-reveal d2"><span>Go Izi,</span><span class="accent">Stay</span><span>Loud.</span></h1>
+        <div class="cta-row hero-reveal d3">
+          <a href="#" class="btn-primary" onclick="goShop('All');return false;">Shop Now →</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="shop">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <div class="eyebrow" style="margin-bottom:14px;">Live Now</div>
+            <div class="section-title">Shop The Drop</div>
+          </div>
+          <a href="#" class="section-link" onclick="goShop('All');return false;">View All →</a>
+        </div>
+        <div id="bentoGrid" class="bento reveal"></div>
+      </div>
+    </section>
+
+    <section id="community">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <div class="eyebrow" style="margin-bottom:14px;">Worn By The Streets</div>
+            <div class="section-title">Real People, Real Fits</div>
+          </div>
+        </div>
+        <div class="community-grid reveal">
+          <div class="community-tile">
+            <img src="assets/community-pink.jpg" alt="IZI community member wearing the Go Izi Baby tee in pink">
+            <div class="shade"></div>
+            <div class="cap"><div class="who">@izigirlph</div><div class="what">Go Izi Baby Tee — Pink</div></div>
+          </div>
+          <div class="community-tile">
+            <img src="assets/community-duo.jpg" alt="Two IZI community members wearing Craft Youth tees">
+            <div class="shade"></div>
+            <div class="cap"><div class="who">@thecrewph</div><div class="what">Craft Youth Tee — Duo</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="statement">
+      <div class="track">
+        <span>Go Izi <i>Baby</i></span><span>Stay Loud</span><span>Drop 001</span>
+        <span>Go Izi <i>Baby</i></span><span>Stay Loud</span><span>Drop 001</span>
+      </div>
+    </section>
+
+    <section id="manifesto">
+      <div class="wrap">
+        <div class="manifesto-eyebrow reveal">The Manifesto</div>
+        <div class="manifesto-grid reveal">
+          <div class="manifesto-quote">IZI isn't a mood you fake. It's the volume you show up at — <i>loud, easy, unbothered.</i></div>
+          <div class="manifesto-side">
+            <p>Every piece is made on demand in small batches, cut for movement and built to survive the way you actually live in it. No filler drops, no dead stock — just the pieces we'd wear on repeat.</p>
+            <div class="manifesto-stats">
+              <div><b>001</b><span>Current Drop</span></div>
+              <div><b id="statCount">—</b><span>Live Pieces</span></div>
+              <div><b>100%</b><span>Made To Order</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="trust">
+      <div class="wrap">
+        <div class="trust-grid">
+          <div class="trust-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>
+            <div class="t">Nigeria-Wide Delivery</div>
+            <div class="d">Ships from Port Harcourt across Nigeria — tracked, on demand.</div>
+          </div>
+          <div class="trust-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="6" width="18" height="13" rx="1.5"/><path d="M3 10h18"/></svg>
+            <div class="t">Secure Payment</div>
+            <div class="d">Every transaction encrypted and protected end to end.</div>
+          </div>
+          <div class="trust-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>
+            <div class="t">30-Day Free Returns</div>
+            <div class="d">Not the right fit? Return or exchange, no questions asked.</div>
+          </div>
+          <div class="trust-item">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+            <div class="t">24/7 Support</div>
+            <div class="d">Real people, around the clock, for orders and beyond.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <div class="section-head reveal" style="justify-content:center; text-align:center; flex-direction:column; align-items:center;">
+          <div class="eyebrow" style="margin-bottom:14px;">Good To Know</div>
+          <div class="section-title">Frequently Asked</div>
+        </div>
+        <div class="faq-list reveal">
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false"><span>How long does shipping take?</span><span class="plus">+</span></button>
+            <div class="faq-a"><div class="faq-a-inner"><p>Orders ship from Port Harcourt within 3–5 business days since every piece is made on demand. Delivery timelines vary by city across Nigeria.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false"><span>What if a piece sells out?</span><span class="plus">+</span></button>
+            <div class="faq-a"><div class="faq-a-inner"><p>We run small, limited batches on purpose — no dead stock, no filler. Once a size or piece is gone, it's gone for that drop. Join the newsletter to catch the next one first.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false"><span>Can I return or exchange?</span><span class="plus">+</span></button>
+            <div class="faq-a"><div class="faq-a-inner"><p>Yes — you have 30 days from delivery to return or exchange unworn pieces with tags attached, no questions asked.</p></div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this)" aria-expanded="false"><span>How do IZI tees fit?</span><span class="plus">+</span></button>
+            <div class="faq-a"><div class="faq-a-inner"><p>Most graphic tees run true to size with a relaxed, easy fit. Check each product's description for specific notes as the admin updates fit details per drop.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="news">
+      <div class="wrap">
+        <div class="eyebrow" style="justify-content:center;">Stay In The Loop</div>
+        <h3>Get first access to the next drop</h3>
+        <form class="news-form" id="newsForm" onsubmit="return submitNewsletter(event);">
+          <input type="email" id="newsEmail" placeholder="Enter your email" required autocomplete="email">
+          <button type="submit">Notify Me →</button>
+        </form>
+        <div class="news-note" id="newsNote" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-brand">
+            <img src="assets/logo.png" alt="IZI mark">
+            <p>Graphic tees and raw layers, made on demand in small batches. Go Izi, stay loud.</p>
+          </div>
+          <div class="foot-col">
+            <div class="h">Shop</div>
+            <a href="#" onclick="goShop('All');return false;">All Products</a>
+            <a href="#" onclick="goShop('Tops');return false;">Tops</a>
+            <a href="#" onclick="goShop('Headwear');return false;">Headwear</a>
+          </div>
+          <div class="foot-col">
+            <div class="h">Help</div>
+            <a href="#" onclick="goToSection('faq');return false;">Shipping</a>
+            <a href="#" onclick="goToSection('faq');return false;">Returns</a>
+            <a href="#" onclick="goToSection('trust');return false;">Contact</a>
+          </div>
+          <div class="foot-col">
+            <div class="h">Company</div>
+            <a href="#" onclick="goToSection('manifesto');return false;">About</a>
+            <a href="#" onclick="goToSection('manifesto');return false;">Journal</a>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>© 2026 IZI. All rights reserved.</span>
+          <a href="#" class="studio-link" onclick="openAdmin();return false;">Studio</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ================= INTRO / LOADING (red tee, door — from original prototype) ================= -->
+  <div id="view-intro">
+    <div class="scanfield"></div>
+    <div class="photo-wrap"><img src="assets/intro-door.jpg" alt="IZI model in red tee at the door"></div>
+    <div class="fade-top"></div>
+    <div class="fade-sides"></div>
+    <div class="fade-bottom"></div>
+    <div class="hud-top">
+      <img src="assets/logo.png" alt="IZI">
+      <span>Drop 001 // Loaded</span>
+    </div>
+    <div class="content">
+      <div class="tagline">DON'T GO <i>iZi</i> ON 'EM</div>
+      <p class="sub">Pieces for those who dare to ztand out.<br>Step in and see the full lineup.</p>
+      <button id="enterBtn" onclick="enterSite()">Choose Your Character <span class="arrow">→</span></button>
+    </div>
+  </div>
+
+  <!-- ================= SHOP ALL ================= -->
+  <div id="view-shop">
+    <nav id="shopNav" class="site-nav">
+      <div class="links">
+        <div class="nav-item has-dropdown">
+          <button type="button" class="nav-link" onclick="toggleMegaMenu(this)" aria-haspopup="true" aria-expanded="false">Shop <span class="chev">⌄</span></button>
+          <div class="mega-menu">
+            <div class="mega-col">
+              <a href="#" class="mega-link strong" onclick="goShop('All');return false;">All Products</a>
+              <div class="mega-sub active" data-key="Tops" onmouseenter="showFlyout(this,'Tops')">Tops <span class="chev-r">›</span></div>
+              <div class="mega-sub" data-key="Bottoms" onmouseenter="showFlyout(this,'Bottoms')">Bottoms <span class="chev-r">›</span></div>
+              <div class="mega-sub" data-key="Headwear" onmouseenter="showFlyout(this,'Headwear')">Headwear <span class="chev-r">›</span></div>
+              <div class="mega-sub" data-key="Accessories" onmouseenter="showFlyout(this,'Accessories')">Accessories <span class="chev-r">›</span></div>
+            </div>
+            <div class="mega-flyout active" data-key="Tops">
+              <a href="#" onclick="goShop('Tops','Tees');return false;">Tees</a>
+              <a href="#" onclick="goShop('Tops','Long Sleeves');return false;">Long Sleeves</a>
+              <a href="#" onclick="goShop('Tops','Hoodies');return false;">Hoodies</a>
+            </div>
+            <div class="mega-flyout" data-key="Bottoms">
+              <a href="#" onclick="goShop('Bottoms','Jeans');return false;">Jeans</a>
+              <a href="#" onclick="goShop('Bottoms','Cargos');return false;">Cargos</a>
+              <a href="#" onclick="goShop('Bottoms','Shorts');return false;">Shorts</a>
+            </div>
+            <div class="mega-flyout" data-key="Headwear">
+              <a href="#" onclick="goShop('Headwear','Caps');return false;">Caps</a>
+              <a href="#" onclick="goShop('Headwear','Visors');return false;">Visors</a>
+              <a href="#" onclick="goShop('Headwear','Beanies');return false;">Beanies</a>
+            </div>
+            <div class="mega-flyout" data-key="Accessories">
+              <a href="#" onclick="goShop('Accessories','Bags');return false;">Bags</a>
+              <a href="#" onclick="goShop('Accessories','Jewelry');return false;">Jewelry</a>
+            </div>
+          </div>
+        </div>
+        <a href="#" onclick="goToSection('manifesto');return false;">Journal</a>
+        <a href="#" onclick="goToSection('trust');return false;">Support</a>
+      </div>
+      <a class="brand-mark" href="#" aria-label="IZI home" onclick="goHome();return false;">
+        <img src="assets/logo.png" alt="IZI">
+      </a>
+      <div class="right">
+        <button type="button" class="nav-icon-btn desktop-only" onclick="openSearch()">Search</button>
+        <button type="button" class="nav-icon-btn bag-btn" onclick="openCart()" aria-label="Open bag">Bag <span class="bag-pill bag-count">0</span></button>
+        <button type="button" class="burger" aria-label="Open menu" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+
+    <section class="shop-hero-strip">
+      <div class="wrap">
+        <div class="eyebrow" style="margin-bottom:12px;">Shop</div>
+        <h2 class="shop-title" id="shopTitle">All Products</h2>
+        <div class="shop-hero-sub" id="shopHeroSub">Drop 001 — made on demand, in small batches.</div>
+      </div>
+    </section>
+
+    <section class="shop-body">
+      <div class="wrap shop-layout">
+        <aside class="shop-filters">
+          <div class="filter-group">
+            <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Availability</span><span class="minus">−</span></button>
+            <div class="filter-body"><div class="filter-body-inner">
+              <label class="stock-toggle">
+                <button type="button" class="toggle" role="switch" aria-checked="false" id="stockToggle" onclick="toggleStockFilter()"><span class="knob"></span></button>
+                <span>In stock only</span>
+              </label>
+            </div></div>
+          </div>
+          <div class="filter-group">
+            <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Price</span><span class="minus">−</span></button>
+            <div class="filter-body"><div class="filter-body-inner">
+              <div class="price-hint" id="priceHint">The highest price is ₦0.00</div>
+              <div class="price-slider">
+                <div class="price-fill" id="priceFill"></div>
+                <input type="range" id="priceMinRange" min="0" max="100" value="0" oninput="onPriceRangeInput()" aria-label="Minimum price">
+                <input type="range" id="priceMaxRange" min="0" max="100" value="100" oninput="onPriceRangeInput()" aria-label="Maximum price">
+              </div>
+              <div class="price-inputs">
+                <div class="price-input-box"><span>₦</span><input type="number" id="priceMinNum" oninput="onPriceNumInput()" aria-label="Minimum price"></div>
+                <div class="price-input-box"><span>₦</span><input type="number" id="priceMaxNum" oninput="onPriceNumInput()" aria-label="Maximum price"></div>
+              </div>
+            </div></div>
+          </div>
+        </aside>
+
+        <div class="shop-main">
+          <div class="shop-toolbar">
+            <div class="shop-sort">
+              <select id="sortSelect" onchange="onSortChange()" aria-label="Sort products">
+                <option value="date-new">Date, New to Old</option>
+                <option value="price-asc">Price, Low to High</option>
+                <option value="price-desc">Price, High to Low</option>
+                <option value="name-asc">Name, A–Z</option>
+              </select>
+            </div>
+            <div class="shop-count" id="shopCount">0 Products</div>
+          </div>
+          <div id="shopGrid" class="shop-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-brand">
+            <img src="assets/logo.png" alt="IZI mark">
+            <p>Graphic tees and raw layers, made on demand in small batches. Go Izi, stay loud.</p>
+          </div>
+          <div class="foot-col">
+            <div class="h">Shop</div>
+            <a href="#" onclick="goShop('All');return false;">All Products</a>
+            <a href="#" onclick="goShop('Tops');return false;">Tops</a>
+            <a href="#" onclick="goShop('Headwear');return false;">Headwear</a>
+          </div>
+          <div class="foot-col">
+            <div class="h">Help</div>
+            <a href="#" onclick="goToSection('faq');return false;">Shipping</a>
+            <a href="#" onclick="goToSection('faq');return false;">Returns</a>
+            <a href="#" onclick="goToSection('trust');return false;">Contact</a>
+          </div>
+          <div class="foot-col">
+            <div class="h">Company</div>
+            <a href="#" onclick="goToSection('manifesto');return false;">About</a>
+            <a href="#" onclick="goToSection('manifesto');return false;">Journal</a>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>© 2026 IZI. All rights reserved.</span>
+          <a href="#" class="studio-link" onclick="openAdmin();return false;">Studio</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ================= CHECKOUT ================= -->
+  <div id="view-checkout">
+    <div class="checkout-wrap">
+      <a href="#" class="btn-ghost checkout-back" onclick="closeCheckout();return false;">← Back to bag</a>
+      <h1 class="checkout-title">Checkout</h1>
+      <div class="checkout-sub">Drop 001 — secure guest checkout</div>
+      <div class="checkout-grid">
+        <div>
+          <form class="checkout-card" id="checkoutForm" onsubmit="return placeOrder(event);">
+            <h4>Contact &amp; Shipping</h4>
+            <div class="field-grid">
+              <div class="full">
+                <label for="coName">Full Name</label>
+                <input id="coName" type="text" required autocomplete="name" placeholder="Your name">
+              </div>
+              <div class="full">
+                <label for="coEmail">Email</label>
+                <input id="coEmail" type="email" required autocomplete="email" placeholder="you@email.com">
+              </div>
+              <div class="full">
+                <label for="coPhone">Phone</label>
+                <input id="coPhone" type="tel" required autocomplete="tel" placeholder="+234...">
+              </div>
+              <div class="full">
+                <label for="coAddress">Street Address</label>
+                <input id="coAddress" type="text" required autocomplete="street-address" placeholder="House no, street">
+              </div>
+              <div>
+                <label for="coCity">City</label>
+                <input id="coCity" type="text" required autocomplete="address-level2" placeholder="Port Harcourt">
+              </div>
+              <div>
+                <label for="coState">State</label>
+                <input id="coState" type="text" required autocomplete="address-level1" placeholder="Rivers">
+              </div>
+              <div class="full">
+                <label for="coNotes">Order Notes (optional)</label>
+                <textarea id="coNotes" rows="2" placeholder="Delivery notes..."></textarea>
+              </div>
+            </div>
+
+            <h4 style="margin-top:28px;">Payment</h4>
+            <div class="pay-methods">
+              <label class="pay-opt active">
+                <input type="radio" name="payMethod" value="card" checked onchange="selectPay(this)">
+                <span>Card / Bank Transfer (Paystack)</span>
+              </label>
+              <label class="pay-opt">
+                <input type="radio" name="payMethod" value="cod" onchange="selectPay(this)">
+                <span>Pay on Delivery (Port Harcourt only)</span>
+              </label>
+            </div>
+            <button type="submit" class="btn-riot" id="placeOrderBtn">Place Order →</button>
+          </form>
+        </div>
+        <aside class="checkout-card" id="checkoutSummary">
+          <h4>Order Summary</h4>
+          <div id="checkoutLines"></div>
+          <div class="summary-totals" id="checkoutTotals"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SUCCESS ================= -->
+  <div id="view-success">
+    <div class="success-card">
+      <div class="check">✓</div>
+      <h2>You're Locked In</h2>
+      <p>Thanks for riding with IZI. Your drop is being cut to order — we'll email you when it ships.</p>
+      <div class="ref" id="successRef">Order #—</div>
+      <div class="success-actions">
+        <a href="#" class="btn-primary" onclick="goHome();return false;">Back Home</a>
+        <a href="#" class="btn-ghost" onclick="goShop('All');return false;">Shop the Drop</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MOBILE MENU ================= -->
+  <div id="mobileMenu" aria-hidden="true">
+    <div class="mm-top">
+      <img src="assets/logo.png" alt="IZI">
+      <button type="button" class="mm-close" aria-label="Close menu" onclick="closeMobileMenu()"><span></span><span></span></button>
+    </div>
+    <div class="mm-links">
+      <button type="button" onclick="toggleMobileSub(this)">Shop <span style="font-family:var(--mono); font-size:14px;">⌄</span></button>
+      <div class="mm-sub">
+        <a href="#" onclick="goShop('All');closeMobileMenu();return false;">All Products</a>
+        <a href="#" onclick="goShop('Tops');closeMobileMenu();return false;">Tops</a>
+        <a href="#" onclick="goShop('Bottoms');closeMobileMenu();return false;">Bottoms</a>
+        <a href="#" onclick="goShop('Headwear');closeMobileMenu();return false;">Headwear</a>
+        <a href="#" onclick="goShop('Accessories');closeMobileMenu();return false;">Accessories</a>
+      </div>
+      <a href="#" onclick="goToSection('manifesto');closeMobileMenu();return false;">Journal</a>
+      <a href="#" onclick="goToSection('trust');closeMobileMenu();return false;">Support</a>
+    </div>
+    <div class="mm-foot">
+      <a href="#" onclick="closeMobileMenu();openSearch();return false;">Search</a>
+      <a href="#" onclick="closeMobileMenu();openCart();return false;" style="color:var(--fg);">Bag (<span class="bag-count">0</span>)</a>
+    </div>
+  </div>
+
+  <!-- ================= QUICK VIEW ================= -->
+  <div id="modalOverlay" onclick="if(event.target===this)closeModal();">
+    <div class="modal-card">
+      <div class="m-img">
+        <button class="m-close" id="mClose" onclick="closeModal()" aria-label="Close">✕</button>
+        <img id="mImg" src="" alt="">
+      </div>
+      <div class="m-body">
+        <div class="m-cat" id="mCat"></div>
+        <div class="m-name" id="mName"></div>
+        <div class="m-price" id="mPrice"></div>
+        <div class="m-desc" id="mDesc"></div>
+        <div class="size-row">
+          <label>Size</label>
+          <div class="size-opts" id="mSizes"></div>
+        </div>
+        <div class="qty-row">
+          <label>Qty</label>
+          <div class="qty-control">
+            <button type="button" onclick="changeModalQty(-1)" aria-label="Decrease quantity">−</button>
+            <span id="mQty">1</span>
+            <button type="button" onclick="changeModalQty(1)" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+        <div class="m-actions">
+          <button type="button" class="btn-primary" id="mAddBtn" onclick="addModalToBag()">Add to Bag →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SEARCH ================= -->
+  <div id="searchOverlay" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="search-top">
+      <input type="search" id="searchInput" placeholder="Search the drop..." autocomplete="off" oninput="onSearchInput()">
+      <button type="button" class="search-close" onclick="closeSearch()">Close</button>
+    </div>
+    <div class="search-hint" id="searchHint">Type a name, category, or tag</div>
+    <div id="searchResults"></div>
+  </div>
+
+  <!-- ================= CART DRAWER ================= -->
+  <div class="panel-scrim" id="cartScrim" onclick="closeCart()"></div>
+  <aside id="cartDrawer" aria-label="Shopping bag">
+    <div class="cart-head">
+      <h3>Your Bag</h3>
+      <button type="button" class="cart-close" onclick="closeCart()" aria-label="Close bag">✕</button>
+    </div>
+    <div class="cart-body" id="cartBody"></div>
+    <div class="cart-foot" id="cartFoot" hidden>
+      <div class="cart-sub"><span>Subtotal</span><b id="cartSubtotal">₦0.00</b></div>
+      <div class="cart-ship-note" id="cartShipNote">Free shipping on orders over ₦75,000</div>
+      <button type="button" class="btn-riot" onclick="goCheckout()">Checkout →</button>
+      <button type="button" class="btn-ghost" style="width:100%;text-align:center;border:none;" onclick="closeCart();goShop('All');">Continue Shopping</button>
+    </div>
+  </aside>
+
+  <!-- ================= FREQUENCY (original discovery flow) ================= -->
+  <button type="button" class="freq-fab" onclick="openFrequency()" aria-haspopup="dialog">
+    <span class="dot"></span><span class="fab-label">✦ What's Your Frequency?</span>
+  </button>
+
+  <div id="freqOverlay" role="dialog" aria-modal="true" aria-label="IZI Frequency" onclick="if(event.target===this)closeFrequency();">
+    <div class="freq-card">
+      <button class="m-close" id="freqClose" onclick="closeFrequency()" aria-label="Close">✕</button>
+
+      <div id="freqPick">
+        <div class="freq-head">
+          <div class="eyebrow">Drop 001 · Frequency</div>
+          <h3>What's your frequency?</h3>
+          <p>No quiz. No algorithm cosplay. Four signals — pick the one that already sounds like you. We match the piece.</p>
+        </div>
+        <div class="freq-grid" id="freqGrid">
+          <button type="button" class="freq-tile" data-freq="riot" onclick="pickFrequency('riot')">
+            <span class="freq-code">01</span>
+            <span class="freq-name">RIOT</span>
+            <span class="freq-line">Volume up. Walk in like the room already knows.</span>
+          </button>
+          <button type="button" class="freq-tile" data-freq="clean" onclick="pickFrequency('clean')">
+            <span class="freq-code">02</span>
+            <span class="freq-name">CLEAN</span>
+            <span class="freq-line">Stark. Sharp. Nothing extra, nothing soft.</span>
+          </button>
+          <button type="button" class="freq-tile" data-freq="signal" onclick="pickFrequency('signal')">
+            <span class="freq-code">03</span>
+            <span class="freq-name">SIGNAL</span>
+            <span class="freq-line">The one people clock from across the street.</span>
+          </button>
+          <button type="button" class="freq-tile" data-freq="static" onclick="pickFrequency('static')">
+            <span class="freq-code">04</span>
+            <span class="freq-name">STATIC</span>
+            <span class="freq-line">Rare signal. Not for everyone — on purpose.</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="freqResult" hidden>
+        <div class="freq-head">
+          <div class="eyebrow" id="freqResultCode">Frequency locked</div>
+          <h3 id="freqResultTitle">Your match</h3>
+          <p id="freqResultLine"></p>
+        </div>
+        <div class="freq-match" id="freqMatchCard"></div>
+        <div class="freq-actions">
+          <button type="button" class="btn-primary" id="freqAddBtn" onclick="addFrequencyToBag()">Add to Bag →</button>
+          <button type="button" class="btn-ghost" onclick="resetFrequency()">← Pick again</button>
+          <button type="button" class="btn-ghost" onclick="closeFrequency()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STUDIO ================= -->
+  <div id="view-admin">
+    <div id="studioGate" class="studio-gate">
+      <span style="font-family:var(--display); font-weight:700; font-size:20px;">IZI Studio</span>
+      <h2>Enter Access Code</h2>
+      <input id="gateInput" type="password" placeholder="Access code" autocomplete="off" onkeydown="if(event.key==='Enter')checkGate()">
+      <button class="btn-primary" onclick="checkGate()">Unlock Studio</button>
+      <div class="err" id="gateErr"></div>
+      <div class="hint">This is a soft deterrent, not real security — the code lives in this page's source. Change it there before sharing this link publicly, and don't rely on it to protect anything sensitive.</div>
+      <a href="#" class="btn-ghost" onclick="closeAdmin();return false;" style="margin-top:10px;">← Back to Site</a>
+    </div>
+
+    <div id="studioDashboard" style="display:none;">
+      <div class="studio-header">
+        <div class="studio-title"><span class="dot"></span> IZI Studio</div>
+        <a href="#" class="btn-ghost" onclick="closeAdmin();return false;">← Back to Live Site</a>
+      </div>
+
+      <div class="studio-body">
+        <div class="studio-tabs">
+          <button type="button" class="studio-tab active" data-tab="products" onclick="switchStudioTab('products')">Products</button>
+          <button type="button" class="studio-tab" data-tab="orders" onclick="switchStudioTab('orders')">Orders</button>
+          <button type="button" class="studio-tab" data-tab="subscribers" onclick="switchStudioTab('subscribers')">Newsletter</button>
+        </div>
+
+        <div class="studio-panel active" id="studioProducts">
+          <div id="studioForm">
+            <div class="form-card">
+              <h4 id="formTitle">Add New Drop</h4>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="fName">Product Name</label>
+                  <input id="fName" type="text" placeholder="e.g. Craft Youth Tee — Red">
+                </div>
+                <div class="form-field">
+                  <label for="fPrice">Price (₦)</label>
+                  <input id="fPrice" type="number" step="1" placeholder="25000">
+                </div>
+                <div class="form-field">
+                  <label for="fCompareAt">Compare-At Price (₦, optional)</label>
+                  <input id="fCompareAt" type="number" step="1" placeholder="Leave blank if no discount">
+                </div>
+                <div class="form-field">
+                  <label for="fCategory">Category</label>
+                  <select id="fCategory">
+                    <option>Tops</option>
+                    <option>Bottoms</option>
+                    <option>Headwear</option>
+                    <option>Accessories</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="fSubcategory">Subcategory (optional)</label>
+                  <input id="fSubcategory" type="text" placeholder="e.g. Tees, Hoodies, Caps">
+                </div>
+                <div class="form-field">
+                  <label for="fTag">Tag</label>
+                  <select id="fTag">
+                    <option value="">None</option>
+                    <option value="New">New</option>
+                    <option value="Sale">Sale</option>
+                    <option value="Limited">Limited</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="fColors">Colors Available</label>
+                  <input id="fColors" type="number" min="1" step="1" placeholder="1">
+                </div>
+                <div class="form-field">
+                  <label for="fSize">Tile Size (Bento)</label>
+                  <select id="fSize">
+                    <option value="normal">Normal</option>
+                    <option value="wide">Wide</option>
+                    <option value="tall">Tall</option>
+                    <option value="big">Big (Feature)</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="fVisible">Visible On Site</label>
+                  <select id="fVisible">
+                    <option value="true">Yes — Show on site</option>
+                    <option value="false">No — Hidden</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="fInStock">Stock Status</label>
+                  <select id="fInStock">
+                    <option value="true">In Stock</option>
+                    <option value="false">Out of Stock</option>
+                  </select>
+                </div>
+                <div class="form-field full">
+                  <label for="fDesc">Description</label>
+                  <textarea id="fDesc" placeholder="Short product story or fit notes..."></textarea>
+                </div>
+                <div class="form-field full">
+                  <label for="fImgInput">Product Image</label>
+                  <div class="upload-zone">
+                    <img id="fImgPreview" src="" alt="" style="display:none;">
+                    <input id="fImgInput" type="file" accept="image/*" onchange="handleImageUpload(event)">
+                    <span class="u-text">JPG/PNG — resized automatically for the site.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn-save" onclick="saveForm()">Save Drop</button>
+                <button class="btn-cancel" onclick="closeForm()">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="studio-toolbar">
+            <h3>All Collections</h3>
+            <button class="btn-add" onclick="openForm()">+ Add New Drop</button>
+          </div>
+          <div id="studioList" class="studio-list"></div>
+        </div>
+
+        <div class="studio-panel" id="studioOrders">
+          <div class="studio-toolbar"><h3>Orders</h3></div>
+          <div id="studioOrderList" class="studio-list"></div>
+        </div>
+
+        <div class="studio-panel" id="studioSubscribers">
+          <div class="studio-toolbar"><h3>Newsletter</h3></div>
+          <div id="studioSubList" class="studio-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
