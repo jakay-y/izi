@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v4";
+const STORAGE_KEY = "izi-catalog-v9";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -24,12 +24,20 @@ let modalSize = "M";
 let modalQty = 1;
 let freqMatchId = null;
 
-/* Product images mapped 1:1 from original izi-site HTML seed */
+/*
+  Live drop (restored):
+  p1 big  = The Mad Consortium @ ₦50,000
+  p2 tall = Craft Youth Tee — Red
+  p3      = Go Izi Baby Tee — White
+  p4      = Marked As Different
+  Hero    = original hero.jpg
+  Manifesto bg = craizi girl
+*/
 const SEED_PRODUCTS = [
   {
     id: "p1",
-    name: "Craft Youth Tee — Red",
-    price: 25000,
+    name: "The Mad Consortium",
+    price: 50000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -37,14 +45,14 @@ const SEED_PRODUCTS = [
     size: "big",
     visible: true,
     inStock: true,
-    colors: 2,
+    colors: 1,
     description:
-      "The flagship Drop 001 piece. Heavyweight cotton, distressed graphic print, cut for a relaxed fit that moves with you.",
-    image: "assets/product-craft-youth-red.jpg",
+      "The Mad Consortium — iZi Executive Club. Heavyweight cotton, cut for a relaxed fit that moves with you.",
+    image: "assets/izi-shirt.jpg",
   },
   {
     id: "p2",
-    name: "Craft Youth Tee — White",
+    name: "Craft Youth Tee — Red",
     price: 25000,
     compareAt: null,
     category: "Tops",
@@ -55,8 +63,8 @@ const SEED_PRODUCTS = [
     inStock: true,
     colors: 2,
     description:
-      "Same graphic language in stark white. Pairs clean with black denim or layers under the Marked As Different long sleeve.",
-    image: "assets/product-craft-youth-white.jpg",
+      "The flagship Drop 001 piece. Heavyweight cotton, distressed graphic print, cut for a relaxed fit that moves with you.",
+    image: "assets/product-craft-youth-red.jpg",
   },
   {
     id: "p3",
@@ -263,6 +271,14 @@ function openModal(id) {
 
   document.getElementById("mImg").src = p.image;
   document.getElementById("mImg").alt = p.name;
+  // Flat product shots (front+back shirt) — zoom out in modal
+  const mImgWrap = document.querySelector("#modalOverlay .m-img");
+  if (mImgWrap) {
+    mImgWrap.classList.toggle(
+      "flat-product",
+      p.id === "p1" || /izi-shirt/i.test(p.image || "")
+    );
+  }
   document.getElementById("mCat").textContent =
     p.category + (p.subcategory ? " · " + p.subcategory : "");
   document.getElementById("mName").textContent = p.name;
@@ -1204,7 +1220,7 @@ function renderShopGrid() {
   let cardsHtml = items
     .map(
       (p) => `
-    <div class="shop-card" onclick="openModal('${p.id}')"
+    <div class="shop-card" data-product="${escapeHtml(p.id)}" onclick="openModal('${p.id}')"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${p.id}');}"
          role="button" tabindex="0" aria-label="View ${escapeHtml(p.name)}">
       <div class="sc-img">
@@ -1247,13 +1263,13 @@ const FREQUENCIES = {
     code: "01 · RIOT",
     title: "Riot frequency",
     line: "You don't enter quiet. Craft Youth Red is the volume you already run at.",
-    productId: "p1",
+    productId: "p2",
   },
   clean: {
     code: "02 · CLEAN",
     title: "Clean frequency",
-    line: "High contrast, zero noise. Craft Youth White keeps the graphic loud and the rest simple.",
-    productId: "p2",
+    line: "High contrast, zero noise. The Mad Consortium is the piece that holds the line.",
+    productId: "p1",
   },
   signal: {
     code: "03 · SIGNAL",
@@ -1343,15 +1359,23 @@ function addFrequencyToBag() {
 
 /* ---------- manifesto bg ---------- */
 function setManifestoBackground() {
+  // Craizi girl stays on manifesto; hero uses original hero.jpg
+  const manifestoUrl = "assets/hero-craizi-girl.jpg";
+  document.documentElement.style.setProperty(
+    "--manifesto-bg",
+    `url("${manifestoUrl}")`
+  );
+
   const heroImg = document.querySelector("#hero .bgimg img");
   if (heroImg && heroImg.src) {
     document.documentElement.style.setProperty(
-      "--manifesto-bg",
-      `url("${heroImg.src}")`
-    );
-    document.documentElement.style.setProperty(
       "--shop-hero-bg",
       `url("${heroImg.src}")`
+    );
+  } else {
+    document.documentElement.style.setProperty(
+      "--shop-hero-bg",
+      `url("assets/hero.jpg")`
     );
   }
 }

@@ -69,8 +69,17 @@
     </nav>
 
     <section id="hero">
-      <div class="bgimg"><img src="assets/hero.jpg" alt="IZI model wearing the Go Izi Baby tee and red visor"></div>
-      <div class="tint"></div>
+      <div class="bgimg">
+        <img
+          src="assets/hero.jpg"
+          alt="IZI model wearing the Go Izi Baby tee and red visor"
+          width="1200"
+          height="1600"
+          decoding="async"
+          fetchpriority="high"
+        >
+      </div>
+      <div class="tint" aria-hidden="true"></div>
       <div class="content">
         <h1 class="hero-reveal d2"><span>Go Izi,</span><span class="accent">Stay</span><span>Loud.</span></h1>
         <div class="cta-row hero-reveal d3">
@@ -93,38 +102,32 @@
     </section>
 
     <section id="community">
-      <!-- Solo feature — full frame of the pink Go Izi Baby look -->
-      <div class="comm-feature comm-feature--solo reveal">
-        <div class="comm-media">
-          <img src="assets/community-pink.jpg" alt="IZI community member wearing the Go Izi Baby tee in pink">
-        </div>
-        <div class="comm-cap">
-          <div class="who">@izigirlph</div>
-          <div class="what">Go Izi Baby Tee — Pink</div>
-        </div>
-      </div>
+      <div class="wrap">
+        <div class="comm-layout reveal">
+          <!-- Left look -->
+          <article class="comm-card">
+            <div class="comm-card-media">
+              <img src="assets/community-pink.jpg" alt="Go Izi Baby Tee — Pink">
+            </div>
+            <div class="comm-card-label">Go Izi Baby Tee — Pink</div>
+          </article>
 
-      <!-- Centered write-up — hierarchy bridge -->
-      <div class="comm-mid reveal">
-        <div class="eyebrow" style="justify-content:center; margin-bottom:16px;">Worn By The Streets</div>
-        <h2 class="comm-mid-title">Real People, Real Fits</h2>
-        <p class="comm-mid-copy">No lookbook polish. Just the drop, worn loud — the way it was meant to move.</p>
-      </div>
+          <!-- Center heading + CTA -->
+          <div class="comm-center">
+            <div class="eyebrow" style="justify-content:center; margin-bottom:14px;">Worn By The Streets</div>
+            <h2 class="comm-center-title">Real People,<br>Real Fits</h2>
+            <p class="comm-center-copy">No lookbook polish. Just the drop, worn loud.</p>
+            <a href="#" class="btn-primary comm-center-cta" onclick="goShop('All');return false;">Shop Now →</a>
+          </div>
 
-      <!-- Duo feature — full frame -->
-      <div class="comm-feature comm-feature--duo reveal">
-        <div class="comm-media">
-          <img src="assets/community-duo.jpg" alt="Two IZI community members wearing Craft Youth tees">
+          <!-- Right look — Craizi white tee from merch -->
+          <article class="comm-card">
+            <div class="comm-card-media">
+              <img src="assets/izi-white-craizi-tee.jpg" alt="Craizi Tee — White">
+            </div>
+            <div class="comm-card-label">Craizi Tee — White</div>
+          </article>
         </div>
-        <div class="comm-cap">
-          <div class="who">@thecrewph</div>
-          <div class="what">Craft Youth Tee — Duo</div>
-        </div>
-      </div>
-
-      <!-- Premium centered CTA -->
-      <div class="comm-cta reveal">
-        <a href="#" class="btn-primary" onclick="goShop('All');return false;">Shop Now →</a>
       </div>
     </section>
 

@@ -1046,12 +1046,13 @@ nav .right .bag-btn {
   color: var(--fg);
 }
 
-/* ---------- Hero ---------- */
+/* ---------- Hero (original hero image) ---------- */
 #hero {
   position: relative;
-  min-height: 92vh;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   overflow: hidden;
   text-align: center;
@@ -1060,6 +1061,7 @@ nav .right .bag-btn {
 #hero .bgimg {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
 #hero .bgimg img {
@@ -1067,45 +1069,57 @@ nav .right .bag-btn {
   height: 100%;
   object-fit: cover;
   object-position: 50% 16%;
-  filter: grayscale(0.04) contrast(1.03) brightness(0.92);
+  filter: contrast(1.05) saturate(1.04) brightness(0.98);
+  transform: scale(1.02);
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 @media (min-width: 900px) {
   #hero .bgimg img {
-    object-position: 48% 10%;
+    object-position: 48% 12%;
   }
 }
 
 @media (min-width: 1280px) {
   #hero .bgimg img {
-    object-position: 50% 8%;
+    object-position: 50% 10%;
   }
 }
 
 @media (max-width: 820px) {
   #hero .bgimg img {
-    object-position: 50% 20%;
+    object-position: 50% 18%;
   }
 }
 
 #hero .tint {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background:
     linear-gradient(
       180deg,
-      rgba(10, 10, 9, 0.28) 0%,
-      rgba(10, 10, 9, 0.08) 40%,
-      rgba(10, 10, 9, 0.55) 72%,
-      rgba(10, 10, 9, 0.9) 100%
+      rgba(10, 10, 9, 0.32) 0%,
+      rgba(10, 10, 9, 0.04) 28%,
+      rgba(10, 10, 9, 0.12) 55%,
+      rgba(10, 10, 9, 0.58) 75%,
+      rgba(10, 10, 9, 0.94) 100%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 50% 35%,
+      transparent 0%,
+      transparent 45%,
+      rgba(10, 10, 9, 0.4) 100%
     );
 }
 
 #hero .content {
   position: relative;
   z-index: 2;
-  padding: 100px clamp(20px, 5vw, 56px) 80px;
-  max-width: 720px;
+  padding: 0 clamp(20px, 5vw, 56px) clamp(48px, 8vh, 88px);
+  max-width: 780px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -1118,21 +1132,24 @@ nav .right .bag-btn {
   font-family: var(--display);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: clamp(42px, 7.5vw, 92px);
-  line-height: 0.92;
-  letter-spacing: -0.01em;
+  font-size: clamp(44px, 8vw, 96px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  text-shadow:
+    0 2px 24px rgba(0, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 #hero h1 span {
   display: block;
 }
 
-/* "Stay" in black — quieter accent so Go Izi / Loud lead the hierarchy */
 #hero h1 .accent {
-  color: #0a0a09;
+  color: rgba(245, 242, 234, 0.42);
   text-shadow:
-    0 1px 0 rgba(245, 242, 234, 0.35),
-    0 0 28px rgba(245, 242, 234, 0.18);
+    0 1px 12px rgba(0, 0, 0, 0.35),
+    0 0 1px rgba(10, 10, 9, 0.8);
 }
 
 #hero .cta-row {
@@ -1140,8 +1157,15 @@ nav .right .bag-btn {
   align-items: center;
   justify-content: center;
   gap: 22px;
-  margin-top: 28px;
+  margin-top: 26px;
   flex-wrap: wrap;
+}
+
+#hero .cta-row .btn-primary {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(245, 242, 234, 0.08);
+  backdrop-filter: blur(4px);
 }
 
 /* ---------- Section head ---------- */
@@ -1239,17 +1263,61 @@ nav .right .bag-btn {
 }
 
 /* Per-product framing so faces/graphics stay in the crop */
-.bento-item[data-product="p1"] img {
-  object-position: 50% 12%;
-}
 .bento-item[data-product="p2"] img {
-  object-position: 50% 15%;
+  object-position: 50% 12%;
 }
 .bento-item[data-product="p3"] img {
   object-position: 50% 12%;
 }
 .bento-item[data-product="p4"] img {
   object-position: 50% 20%;
+}
+
+/*
+  The Mad Consortium shirt (p1): full front + back composite.
+  Zoom out (contain) so both sides show — like the taller second frame.
+*/
+.bento-item[data-product="p1"] {
+  background: #050505;
+}
+.bento-item[data-product="p1"] img {
+  object-fit: contain;
+  object-position: center center;
+  /* slight inset so front+back aren't edge-clipped */
+  padding: 6% 8%;
+  box-sizing: border-box;
+  background: #050505;
+}
+.bento-item[data-product="p1"] .shade {
+  /* lighter gradient so white shirt stays readable */
+  background: linear-gradient(
+    0deg,
+    rgba(10, 10, 9, 0.88) 0%,
+    rgba(10, 10, 9, 0.2) 38%,
+    transparent 55%
+  );
+}
+
+/* Shop grid + modal: same full front/back treatment */
+.shop-card[data-product="p1"] .sc-img {
+  background: #050505;
+}
+.shop-card[data-product="p1"] .sc-img img {
+  object-fit: contain;
+  object-position: center center;
+  padding: 8% 10%;
+  box-sizing: border-box;
+}
+
+.modal-card .m-img.flat-product {
+  background: #050505;
+  min-height: 360px;
+}
+.modal-card .m-img.flat-product img {
+  object-fit: contain;
+  object-position: center center;
+  padding: 6% 8%;
+  box-sizing: border-box;
 }
 
 .bento-item:hover img {
@@ -1425,6 +1493,13 @@ nav .right .bag-btn {
   .bento-item img {
     object-position: 50% 16%;
   }
+
+  /* Keep The Mad Consortium fully zoomed out on phones too */
+  .bento-item[data-product="p1"] img {
+    object-fit: contain;
+    object-position: center center;
+    padding: 8% 10%;
+  }
 }
 
 /* Very small phones */
@@ -1457,144 +1532,171 @@ nav .right .bag-btn {
   border-radius: var(--radius-lg);
 }
 
-/* ---------- Community ---------- */
-/* ---------- Community editorial (solo → copy → duo → CTA) ---------- */
+/* ---------- Community: side-by-side looks + center heading ---------- */
 #community {
-  padding: 0 0 80px;
+  padding: clamp(72px, 10vw, 120px) 0;
   background: var(--bg);
 }
 
-.comm-feature {
-  position: relative;
-  width: 100%;
-}
-
-.comm-media {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  /* Tall stage so full photos read without aggressive crop */
-  display: flex;
+.comm-layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(200px, 280px) 1fr;
+  gap: clamp(20px, 3vw, 36px);
   align-items: center;
-  justify-content: center;
-  min-height: min(72vh, 640px);
-  max-height: min(90vh, 900px);
-  padding: 0;
 }
 
-@media (min-width: 900px) {
-  .comm-media {
-    min-height: min(78vh, 760px);
-    max-height: min(88vh, 860px);
-  }
+/* Equal image cards — shared radius with rest of site */
+.comm-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.comm-media img {
+.comm-card-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  aspect-ratio: 3 / 4;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+.comm-card-media img {
   width: 100%;
   height: 100%;
-  max-height: min(90vh, 900px);
-  object-fit: contain; /* full picture — no crop */
-  object-position: center center;
+  object-fit: cover;
+  object-position: 50% 18%;
   display: block;
-  transition: transform 0.8s var(--ease);
+  transition: transform 0.65s var(--ease);
 }
 
-@media (min-width: 900px) {
-  .comm-media img {
-    max-height: min(88vh, 860px);
+.comm-card:first-child .comm-card-media img {
+  object-position: 50% 20%;
+}
+
+.comm-card:last-child .comm-card-media img {
+  object-position: 50% 28%;
+}
+
+.comm-card:hover .comm-card-media img {
+  transform: scale(1.04);
+}
+
+/* Merch name only — no handles */
+.comm-card-label {
+  font-family: var(--display);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(13px, 1.4vw, 16px);
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: var(--fg);
+  line-height: 1.25;
+}
+
+/* Center column — hierarchy hub */
+.comm-center {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+}
+
+.comm-center-title {
+  font-family: var(--display);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(22px, 2.6vw, 34px);
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  margin-bottom: 14px;
+}
+
+.comm-center-copy {
+  font-family: var(--arty);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--fg-dim);
+  line-height: 1.55;
+  max-width: 220px;
+  margin: 0 auto 22px;
+}
+
+.comm-center-cta {
+  padding: 14px 26px;
+  font-size: 13px;
+}
+
+/* Tablet: heading on top, images side-by-side */
+@media (max-width: 900px) {
+  .comm-layout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "head head"
+      "left right";
+    gap: 28px 16px;
+    align-items: start;
+  }
+
+  .comm-center {
+    grid-area: head;
+    padding: 0 12px 8px;
+  }
+
+  .comm-center-title {
+    font-size: clamp(26px, 6vw, 36px);
+  }
+
+  .comm-center-copy {
+    max-width: 320px;
+    font-size: 15px;
+  }
+
+  .comm-card:first-child {
+    grid-area: left;
+  }
+
+  .comm-card:last-child {
+    grid-area: right;
+  }
+
+  .comm-card-media {
+    aspect-ratio: 3 / 3.8;
   }
 }
 
-.comm-feature:hover .comm-media img {
-  transform: scale(1.015);
-}
+/* Phone: stack for clarity */
+@media (max-width: 560px) {
+  #community {
+    padding: 56px 0 64px;
+  }
 
-/* Soft edge fade so letterboxing feels intentional */
-.comm-media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(10, 10, 9, 0.25) 0%,
-    transparent 18%,
-    transparent 72%,
-    rgba(10, 10, 9, 0.55) 100%
-  );
-}
+  .comm-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "left"
+      "right";
+    gap: 28px;
+  }
 
-.comm-cap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  padding: 48px clamp(20px, 5vw, 56px) 28px;
-  background: linear-gradient(
-    0deg,
-    rgba(10, 10, 9, 0.88) 0%,
-    rgba(10, 10, 9, 0.35) 55%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
+  .comm-card-media {
+    aspect-ratio: 4 / 5;
+    max-height: 420px;
+  }
 
-.comm-cap .who {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--riot-2);
-  margin-bottom: 6px;
-}
+  .comm-card-label {
+    font-size: 14px;
+  }
 
-.comm-cap .what {
-  font-family: var(--display);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: clamp(18px, 2.4vw, 26px);
-  letter-spacing: -0.01em;
-}
-
-/* Mid bridge — calm hierarchy between the two frames */
-.comm-mid {
-  text-align: center;
-  padding: clamp(56px, 10vw, 96px) clamp(20px, 5vw, 56px);
-  max-width: 640px;
-  margin: 0 auto;
-}
-
-.comm-mid-title {
-  font-family: var(--display);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: clamp(28px, 4vw, 44px);
-  letter-spacing: -0.01em;
-  margin-bottom: 16px;
-  line-height: 1.05;
-}
-
-.comm-mid-copy {
-  font-family: var(--arty);
-  font-style: italic;
-  font-size: clamp(16px, 2vw, 20px);
-  color: var(--fg-dim);
-  line-height: 1.55;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.comm-cta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: clamp(40px, 7vw, 72px) 20px 20px;
-}
-
-.comm-cta .btn-primary {
-  min-width: 200px;
+  .comm-center-cta {
+    width: 100%;
+    max-width: 260px;
+  }
 }
 
 /* ---------- Statement ---------- */
