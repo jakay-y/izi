@@ -362,43 +362,47 @@ select:focus-visible {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(10, 10, 9, 0.35) 0%,
-    rgba(10, 10, 9, 0.12) 42%,
-    rgba(10, 10, 9, 0.4) 100%
+    rgba(10, 10, 9, 0.1) 0%,
+    rgba(10, 10, 9, 0) 40%,
+    rgba(10, 10, 9, 0.18) 100%
   );
 }
 
-/*
-  Door shot is portrait; desktop is wide. Cover still fills the frame,
-  but we anchor on the figure (lower-mid) so he isn't cropped away.
-  Milder scale so the full model reads on large screens.
-*/
+/* Intro photo — full-bleed zoom (no empty corners) */
+#view-intro .photo-wrap {
+  background: var(--bg);
+  overflow: hidden;
+}
+
 #view-intro .photo-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 55%;
+  object-position: 50% 42%;
   opacity: 0;
-  transform: scale(1.02);
-  animation: introReveal 1.7s var(--ease) 0.2s forwards;
-  filter: grayscale(0.1) contrast(1.02) brightness(0.92) saturate(1.04);
+  transform: scale(1.08);
+  transform-origin: center center;
+  animation: introReveal 1.5s var(--ease) 0.15s forwards;
+  filter: contrast(1.05) saturate(1.06) brightness(0.98);
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 @keyframes introReveal {
+  from {
+    opacity: 0;
+    transform: scale(1.12);
+  }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1.08);
   }
 }
 
 @media (min-width: 900px) {
   #view-intro .photo-wrap img {
-    /* Anchor mid-body so head + feet stay in the crop on ultrawide */
-    object-position: 50% 52%;
-    /* Visually “smaller” subject = less aggressive zoom (still covers) */
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    object-position: 48% 40%;
   }
 }
 
@@ -408,13 +412,14 @@ select:focus-visible {
   }
 }
 
+/* Minimal edge falls — photo stays primary */
 #view-intro .fade-top {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 28%;
-  background: linear-gradient(180deg, var(--bg) 0%, rgba(10, 10, 9, 0) 100%);
+  height: 14%;
+  background: linear-gradient(180deg, rgba(10, 10, 9, 0.35) 0%, rgba(10, 10, 9, 0) 100%);
   z-index: 2;
   pointer-events: none;
 }
@@ -424,8 +429,8 @@ select:focus-visible {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 36%;
-  background: linear-gradient(0deg, var(--bg) 5%, rgba(10, 10, 9, 0) 100%);
+  height: 26%;
+  background: linear-gradient(0deg, rgba(10, 10, 9, 0.55) 0%, rgba(10, 10, 9, 0) 100%);
   z-index: 2;
   pointer-events: none;
 }
@@ -435,10 +440,10 @@ select:focus-visible {
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(10, 10, 9, 0.55) 0%,
+    rgba(10, 10, 9, 0.14) 0%,
     rgba(10, 10, 9, 0) 12%,
     rgba(10, 10, 9, 0) 88%,
-    rgba(10, 10, 9, 0.55) 100%
+    rgba(10, 10, 9, 0.14) 100%
   );
   z-index: 2;
   pointer-events: none;
@@ -448,17 +453,17 @@ select:focus-visible {
   #view-intro .fade-sides {
     background: linear-gradient(
       90deg,
-      rgba(10, 10, 9, 0.35) 0%,
+      rgba(10, 10, 9, 0.08) 0%,
       rgba(10, 10, 9, 0) 10%,
       rgba(10, 10, 9, 0) 90%,
-      rgba(10, 10, 9, 0.35) 100%
+      rgba(10, 10, 9, 0.08) 100%
     );
   }
   #view-intro .fade-top {
-    height: 22%;
+    height: 12%;
   }
   #view-intro .fade-bottom {
-    height: 30%;
+    height: 22%;
   }
 }
 
@@ -1201,18 +1206,26 @@ nav .right .bag-btn {
   border-color: var(--fg);
 }
 
-/* ---------- Bento ---------- */
+/* ---------- Shop / Bento (premium fashion grid) ---------- */
 #shop {
-  padding: 120px 0 100px;
+  padding: clamp(80px, 10vw, 120px) 0 clamp(72px, 8vw, 100px);
+}
+
+#shop .section-head {
+  margin-bottom: 36px;
+  align-items: flex-end;
+}
+
+#shop .section-link {
+  letter-spacing: 0.12em;
 }
 
 .bento {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 210px;
-  /* dense reorders tiles and mixes products — desktop only */
+  grid-auto-rows: 220px;
   grid-auto-flow: dense;
-  gap: 18px;
+  gap: 20px;
 }
 
 .bento-item {
@@ -1224,17 +1237,19 @@ nav .right .bag-btn {
   border-radius: var(--radius-lg);
   grid-column: span 1;
   grid-row: span 1;
-  min-width: 0; /* prevent grid blowout on small screens */
+  min-width: 0;
   transition:
-    transform 0.4s var(--ease),
+    transform 0.45s var(--ease),
     border-color 0.3s ease,
-    box-shadow 0.4s var(--ease);
+    box-shadow 0.45s var(--ease);
 }
 
 .bento-item:hover {
-  transform: translateY(-4px);
-  border-color: var(--line-strong);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(-6px);
+  border-color: rgba(245, 242, 234, 0.28);
+  box-shadow:
+    0 22px 50px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(224, 35, 60, 0.12);
 }
 
 .bento-item[data-size="big"] {
@@ -1266,8 +1281,10 @@ nav .right .bag-btn {
 .bento-item[data-product="p2"] img {
   object-position: 50% 12%;
 }
+/* Go Izi Baby merch — graphic tee close-up */
 .bento-item[data-product="p3"] img {
-  object-position: 50% 12%;
+  object-position: 50% 35%;
+  object-fit: cover;
 }
 .bento-item[data-product="p4"] img {
   object-position: 50% 20%;
@@ -1357,6 +1374,46 @@ nav .right .bag-btn {
   right: 16px;
   bottom: 14px;
   z-index: 2;
+  transition: transform 0.4s var(--ease);
+}
+
+.bento-item:hover .info {
+  transform: translateY(-2px);
+}
+
+/* Quick-view cue — fashion ecom pattern */
+.bento-item::after {
+  content: "Quick view";
+  position: absolute;
+  left: 50%;
+  bottom: 72px;
+  z-index: 3;
+  transform: translate(-50%, 8px);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--fg);
+  padding: 10px 16px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s var(--ease);
+  white-space: nowrap;
+}
+
+.bento-item:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 900px) {
+  .bento-item::after {
+    display: none;
+  }
 }
 
 .bento-item .cat {
@@ -1744,35 +1801,68 @@ nav .right .bag-btn {
   to { transform: translateX(-50%); }
 }
 
-/* ---------- Manifesto ---------- */
+/* ---------- Manifesto (craizi girl photo, no heavy black fill) ---------- */
 #manifesto {
   position: relative;
-  padding: 150px 0;
+  padding: clamp(100px, 14vw, 160px) 0;
   overflow: hidden;
   background-color: var(--bg);
-  background-image: var(--manifesto-bg, none);
-  background-size: cover;
-  background-position: 50% 30%;
+  isolation: isolate;
 }
 
+.manifesto-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--manifesto-bg, url("assets/hero-craizi-girl.jpg"));
+  background-size: cover;
+  background-position: 50% 18%;
+  background-repeat: no-repeat;
+  filter: contrast(1.05) saturate(1.08) brightness(1.04);
+  transform: scale(1.02);
+}
+
+/* Very light wash — model fully visible behind glass */
 #manifesto::before {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
+  pointer-events: none;
   background:
     linear-gradient(
-      180deg,
-      rgba(10, 10, 9, 0.94) 0%,
-      rgba(10, 10, 9, 0.82) 40%,
-      rgba(10, 10, 9, 0.94) 100%
+      100deg,
+      rgba(10, 10, 9, 0.22) 0%,
+      rgba(10, 10, 9, 0.08) 40%,
+      rgba(10, 10, 9, 0.04) 70%,
+      rgba(10, 10, 9, 0.18) 100%
     ),
-    radial-gradient(circle at 20% 20%, rgba(224, 35, 60, 0.16), transparent 55%);
+    linear-gradient(
+      180deg,
+      rgba(10, 10, 9, 0.12) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(10, 10, 9, 0.2) 100%
+    );
 }
 
 #manifesto .wrap {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+}
+
+/* Glass morphism kept — lighter so she shows through */
+.manifesto-panel {
+  max-width: 920px;
+  padding: clamp(28px, 4vw, 44px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(245, 242, 234, 0.2);
+  background: rgba(10, 10, 9, 0.28);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(245, 242, 234, 0.1);
 }
 
 .manifesto-eyebrow {
@@ -1785,6 +1875,7 @@ nav .right .bag-btn {
   display: flex;
   align-items: center;
   gap: 14px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
 }
 
 .manifesto-eyebrow::after {
@@ -1793,20 +1884,24 @@ nav .right .bag-btn {
   max-width: 64px;
   height: 1px;
   background: var(--riot-2);
-  opacity: 0.5;
+  opacity: 0.65;
 }
 
 .manifesto-grid {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
-  gap: 60px;
+  gap: 48px;
   align-items: start;
 }
 
 @media (max-width: 900px) {
   .manifesto-grid {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 28px;
+  }
+
+  .manifesto-panel {
+    max-width: 100%;
   }
 }
 
@@ -1816,27 +1911,37 @@ nav .right .bag-btn {
   font-weight: 400;
   font-size: clamp(30px, 4.2vw, 52px);
   line-height: 1.22;
+  color: var(--fg);
+  text-shadow:
+    0 2px 18px rgba(0, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.4);
   letter-spacing: -0.005em;
   font-optical-sizing: auto;
 }
 
 .manifesto-quote i {
   font-style: italic;
-  color: var(--riot);
+  color: var(--riot-2);
+  text-shadow: 0 0 24px rgba(224, 35, 60, 0.35);
 }
 
 .manifesto-side p {
   font-size: 15.5px;
   line-height: 1.7;
-  color: var(--fg-dim);
+  color: rgba(245, 242, 234, 0.88);
   max-width: 420px;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
 }
 
 .manifesto-stats {
   display: flex;
-  gap: 40px;
+  gap: 32px;
   margin-top: 34px;
   flex-wrap: wrap;
+}
+
+.manifesto-stats div {
+  min-width: 72px;
 }
 
 .manifesto-stats div b {
@@ -1844,6 +1949,8 @@ nav .right .bag-btn {
   font-family: var(--display);
   font-weight: 600;
   font-size: 28px;
+  color: var(--fg);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
 .manifesto-stats div span {
@@ -1851,7 +1958,7 @@ nav .right .bag-btn {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg-dim);
+  color: rgba(245, 242, 234, 0.65);
 }
 
 /* ---------- Trust ---------- */
@@ -1975,7 +2082,7 @@ nav .right .bag-btn {
 
 .shop-hero-strip {
   position: relative;
-  padding: 150px clamp(20px, 5vw, 56px) 56px;
+  padding: 130px clamp(20px, 5vw, 56px) 52px;
   border-bottom: 1px solid var(--line);
   overflow: hidden;
   background-color: var(--bg);
@@ -2020,13 +2127,13 @@ nav .right .bag-btn {
 }
 
 .shop-body {
-  padding: 56px 0 120px;
+  padding: 48px 0 120px;
 }
 
 .shop-layout {
   display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 54px;
+  grid-template-columns: 260px 1fr;
+  gap: 48px;
   align-items: start;
 }
 
@@ -2226,9 +2333,11 @@ nav .right .bag-btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 34px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
   gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
 }
 
 .shop-count {
@@ -2243,9 +2352,17 @@ nav .right .bag-btn {
   background: var(--bg-2);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  padding: 10px 14px;
+  padding: 12px 16px;
   font-family: var(--mono);
   font-size: 11px;
+  transition: border-color 0.2s ease;
+}
+
+.shop-sort select:hover {
+  border-color: var(--line-strong);
+}
+
+.shop-sort select {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--fg);
@@ -2259,23 +2376,34 @@ nav .right .bag-btn {
 .shop-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 28px 24px;
+  gap: 32px 28px;
 }
 
 @media (max-width: 1100px) {
   .shop-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 28px 20px;
   }
 }
 
 @media (max-width: 560px) {
   .shop-grid {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
 }
 
+/* Premium product cards — image-first fashion pattern */
 .shop-card {
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: transform 0.35s var(--ease);
+}
+
+.shop-card:hover {
+  transform: translateY(-4px);
 }
 
 .sc-img {
@@ -2285,12 +2413,15 @@ nav .right .bag-btn {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  margin-bottom: 16px;
-  transition: border-color 0.3s ease;
+  margin-bottom: 14px;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.4s var(--ease);
 }
 
 .shop-card:hover .sc-img {
-  border-color: var(--line-strong);
+  border-color: rgba(245, 242, 234, 0.28);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
 .sc-img img {
@@ -2298,11 +2429,44 @@ nav .right .bag-btn {
   height: 100%;
   object-fit: cover;
   object-position: 50% 14%;
-  transition: transform 0.6s var(--ease);
+  transition: transform 0.65s var(--ease);
 }
 
 .shop-card:hover .sc-img img {
-  transform: scale(1.045);
+  transform: scale(1.05);
+}
+
+.sc-img::after {
+  content: "View";
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translate(-50%, 6px);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--fg);
+  padding: 10px 18px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s var(--ease);
+  z-index: 2;
+}
+
+.shop-card:hover .sc-img::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 720px) {
+  .sc-img::after {
+    display: none;
+  }
 }
 
 .sc-img .badge {
@@ -2334,14 +2498,26 @@ nav .right .bag-btn {
   color: var(--fg-dim);
 }
 
+.sc-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 2px;
+}
+
 .sc-name {
+  font-family: var(--display);
   font-weight: 600;
   font-size: 14.5px;
-  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
 .sc-price {
-  font-size: 13.5px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
   color: var(--fg-dim);
 }
 

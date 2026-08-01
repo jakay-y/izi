@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v9";
+const STORAGE_KEY = "izi-catalog-v10";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -80,7 +80,7 @@ const SEED_PRODUCTS = [
     colors: 3,
     description:
       'The signature lip graphic that started it all. Fitted cut, soft-hand print, comes in white and pink.',
-    image: "assets/product-go-izi-baby.jpg",
+    image: "assets/product-go-izi-baby-merch.png",
   },
   {
     id: "p4",
@@ -1220,17 +1220,19 @@ function renderShopGrid() {
   let cardsHtml = items
     .map(
       (p) => `
-    <div class="shop-card" data-product="${escapeHtml(p.id)}" onclick="openModal('${p.id}')"
+    <article class="shop-card" data-product="${escapeHtml(p.id)}" onclick="openModal('${p.id}')"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${p.id}');}"
          role="button" tabindex="0" aria-label="View ${escapeHtml(p.name)}">
       <div class="sc-img">
-        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy">
+        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">
         ${p.tag ? `<span class="badge">${escapeHtml(p.tag)}</span>` : ""}
       </div>
-      <div class="sc-name">${escapeHtml(p.name)}</div>
-      <div class="sc-price">${priceLine(p)}</div>
-      ${p.colors > 1 ? `<div class="sc-colors">Available in ${p.colors} colors</div>` : ""}
-    </div>`
+      <div class="sc-meta">
+        <div class="sc-name">${escapeHtml(p.name)}</div>
+        <div class="sc-price">${priceLine(p)}</div>
+        ${p.colors > 1 ? `<div class="sc-colors">Available in ${p.colors} colors</div>` : ""}
+      </div>
+    </article>`
     )
     .join("");
 
@@ -1359,12 +1361,16 @@ function addFrequencyToBag() {
 
 /* ---------- manifesto bg ---------- */
 function setManifestoBackground() {
-  // Craizi girl stays on manifesto; hero uses original hero.jpg
+  // Craizi girl from merch — full photo, no heavy black fill
   const manifestoUrl = "assets/hero-craizi-girl.jpg";
   document.documentElement.style.setProperty(
     "--manifesto-bg",
     `url("${manifestoUrl}")`
   );
+  const photoEl = document.querySelector("#manifesto .manifesto-photo");
+  if (photoEl) {
+    photoEl.style.backgroundImage = `url("${manifestoUrl}")`;
+  }
 
   const heroImg = document.querySelector("#hero .bgimg img");
   if (heroImg && heroImg.src) {
