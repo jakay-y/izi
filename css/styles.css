@@ -1756,6 +1756,18 @@ nav .right .bag-btn {
   }
 }
 
+/* Paystack test button near merch / community */
+.pay-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 36px;
+  padding-bottom: 8px;
+}
+
+#pay-button {
+  min-width: 180px;
+}
+
 /* ---------- Statement ---------- */
 #statement {
   background: var(--bg-2);

@@ -555,13 +555,16 @@ function placeOrder(e) {
   const ship = sub >= FREE_SHIP_AT ? 0 : 3500;
   const total = sub + ship;
   const ref = "IZI-" + Date.now().toString(36).toUpperCase();
+  const amountKobo = Math.round(total * 100);
 
-  const order = {
+  // Snapshot cart + order fields before payment (cart must not clear if user cancels)
+  const orderDraft = {
     id: uid("ord_"),
     ref,
     createdAt: new Date().toISOString(),
-    status: "paid",
+    status: "pending",
     payMethod,
+    paystack_reference: null,
     customer: { name, email, phone, address, city, state, notes },
     items: cart.map((c) => ({ ...c })),
     subtotal: sub,
@@ -569,21 +572,129 @@ function placeOrder(e) {
     total,
   };
 
-  orders.unshift(order);
-  saveOrders();
+  if (typeof PaystackPop === "undefined") {
+    showToast("Payment is unavailable right now. Please try again.", true);
+    return false;
+  }
 
-  account = { name, email };
-  lsSet(ACCOUNT_KEY, account);
+  const handler = PaystackPop.setup({
+    key: "pk_test_cfd9e2fa94ded703427fbbbc1681f97b6946c9b8",
+    email: email,
+    amount: amountKobo,
+    currency: "NGN",
+    // Do NOT pass our internal order ref — let Paystack generate the transaction reference
+    metadata: {
+      order_id: orderDraft.id,
+      order_ref: ref,
+      custom_fields: [
+        {
+          display_name: "Customer Name",
+          variable_name: "customer_name",
+          value: name,
+        },
+        {
+          display_name: "Phone",
+          variable_name: "phone",
+          value: phone,
+        },
+        {
+          display_name: "Order Ref",
+          variable_name: "order_ref",
+          value: ref,
+        },
+      ],
+    },
+    // Fires only after a successful payment (Paystack's success callback)
+    callback: function (response) {
+      // ONLY Paystack's own reference field — never our internal IZI-… order id
+      const paystackReference =
+        response && typeof response.reference === "string"
+          ? response.reference
+          : null;
 
-  cart = [];
-  saveCart();
+      console.log("Paystack callback response:", response);
+      console.log("Sending to /verify-payment reference:", paystackReference);
+      console.log("Internal order ref (not sent to verify):", orderDraft.ref);
 
-  hideAllMainViews();
-  document.getElementById("view-success").classList.add("active");
-  document.getElementById("successRef").textContent =
-    "Order " + ref + " · " + formatNGN(total);
-  document.getElementById("checkoutForm").reset();
-  showToast("Order placed");
+      if (!paystackReference) {
+        showToast(
+          "Payment could not be verified. Please contact support.",
+          true
+        );
+        return;
+      }
+
+      // Verify on our server before trusting the payment
+      (async function completeVerifiedOrder() {
+        try {
+          const verifyRes = await fetch("https://izi-backend-zggj.onrender.com/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              reference: paystackReference, // Paystack callback response.reference only
+              amount: amountKobo,
+            }),
+          });
+
+          let result = null;
+          try {
+            result = await verifyRes.json();
+          } catch (_) {
+            result = null;
+          }
+
+          if (!verifyRes.ok || !result || result.verified !== true) {
+            showToast(
+              "Payment could not be verified. Please contact support.",
+              true
+            );
+            return;
+          }
+
+          const order = {
+            ...orderDraft,
+            status: "paid",
+            paystack_reference: paystackReference,
+            // keep our internal order reference for records/display
+            ref: orderDraft.ref,
+          };
+
+          orders.unshift(order);
+          saveOrders();
+
+          account = { name, email };
+          lsSet(ACCOUNT_KEY, account);
+
+          cart = [];
+          saveCart();
+
+          hideAllMainViews();
+          document.getElementById("view-success").classList.add("active");
+          document.getElementById("successRef").textContent =
+            "Order " +
+            orderDraft.ref +
+            " · " +
+            paystackReference +
+            " · " +
+            formatNGN(total);
+          document.getElementById("checkoutForm").reset();
+          showToast("Order placed");
+        } catch (err) {
+          console.error("Payment verification failed:", err);
+          showToast(
+            "Verify error: " + (err && err.message ? err.message : String(err)),
+            true
+          );
+        }
+      })();
+    },
+    // User closed popup without paying — do nothing (keep cart + form)
+    onClose: function () {
+      console.log("Paystack popup closed without completing payment");
+    },
+  });
+
+  handler.openIframe();
   return false;
 }
 
