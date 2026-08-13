@@ -5,7 +5,12 @@
  */
 
 // Edit these later as needed
-const PAYSTACK_PUBLIC_KEY = "pk_test_cfd9e2fa94ded703427fbbbc1681f97b6946c9b8";
+// Public key from js/env.js (Netlify build injects NEXT_PUBLIC_PAYSTACK_KEY)
+const PAYSTACK_PUBLIC_KEY =
+  (typeof window !== "undefined" &&
+    window.__ENV &&
+    window.__ENV.NEXT_PUBLIC_PAYSTACK_KEY) ||
+  "";
 const PAYSTACK_EMAIL = "customer@example.com"; // change before going live
 const PAYSTACK_AMOUNT_KOBO = 500000; // ₦5,000.00 (amount is always in kobo)
 

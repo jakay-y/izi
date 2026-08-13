@@ -578,7 +578,12 @@ function placeOrder(e) {
   }
 
   const handler = PaystackPop.setup({
-    key: "pk_test_cfd9e2fa94ded703427fbbbc1681f97b6946c9b8",
+    // Public key from js/env.js (Netlify build injects NEXT_PUBLIC_PAYSTACK_KEY)
+    key:
+      (typeof window !== "undefined" &&
+        window.__ENV &&
+        window.__ENV.NEXT_PUBLIC_PAYSTACK_KEY) ||
+      "",
     email: email,
     amount: amountKobo,
     currency: "NGN",

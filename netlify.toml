@@ -1,0 +1,9 @@
+# Static HTML/JS site (not Next.js)
+# Public Paystack key is injected at build time into js/env.js
+
+[build]
+  command = "node scripts/generate-env.js"
+  publish = "."
+
+# Optional: skip publishing server folder as static assets is fine;
+# secret stays only in server/.env on Render, never in the browser.
