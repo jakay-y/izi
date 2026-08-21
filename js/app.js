@@ -529,6 +529,9 @@ function selectPay(input) {
   input.closest(".pay-opt").classList.add("active");
 }
 
+/** Live backend base URL (Render) */
+const API_BASE = "https://izi-backend-zggj.onrender.com";
+
 function placeOrder(e) {
   e.preventDefault();
   if (!cart.length) {
@@ -556,6 +559,9 @@ function placeOrder(e) {
   const total = sub + ship;
   const ref = "IZI-" + Date.now().toString(36).toUpperCase();
   const amountKobo = Math.round(total * 100);
+  const deliveryAddress = [address, city, state, notes]
+    .filter(Boolean)
+    .join(", ");
 
   // Snapshot cart + order fields before payment (cart must not clear if user cancels)
   const orderDraft = {
@@ -565,6 +571,7 @@ function placeOrder(e) {
     status: "pending",
     payMethod,
     paystack_reference: null,
+    order_number: null,
     customer: { name, email, phone, address, city, state, notes },
     items: cart.map((c) => ({ ...c })),
     subtotal: sub,
@@ -577,38 +584,79 @@ function placeOrder(e) {
     return false;
   }
 
-  const handler = PaystackPop.setup({
-    // Public key from js/env.js (Netlify build injects NEXT_PUBLIC_PAYSTACK_KEY)
-    key:
-      (typeof window !== "undefined" &&
-        window.__ENV &&
-        window.__ENV.NEXT_PUBLIC_PAYSTACK_KEY) ||
-      "",
-    email: email,
-    amount: amountKobo,
-    currency: "NGN",
-    // Do NOT pass our internal order ref — let Paystack generate the transaction reference
-    metadata: {
-      order_id: orderDraft.id,
-      order_ref: ref,
-      custom_fields: [
-        {
-          display_name: "Customer Name",
-          variable_name: "customer_name",
-          value: name,
-        },
-        {
-          display_name: "Phone",
-          variable_name: "phone",
-          value: phone,
-        },
-        {
-          display_name: "Order Ref",
-          variable_name: "order_ref",
-          value: ref,
-        },
-      ],
-    },
+  const paystackKey =
+    (typeof window !== "undefined" &&
+      window.__ENV &&
+      window.__ENV.NEXT_PUBLIC_PAYSTACK_KEY) ||
+    "";
+
+  if (!paystackKey) {
+    showToast("Payment is not configured. Please try again later.", true);
+    return false;
+  }
+
+  // 1) Create Pending order in Airtable BEFORE opening Paystack
+  (async function startCheckoutWithOrder() {
+    let orderNumber = null;
+    try {
+      const orderRes = await fetch(API_BASE + "/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: name,
+          phoneNumber: phone,
+          deliveryAddress: deliveryAddress,
+          items: orderDraft.items,
+          totalAmount: total,
+        }),
+      });
+      const orderJson = await orderRes.json().catch(() => null);
+      if (!orderRes.ok || !orderJson || !orderJson.orderNumber) {
+        showToast(
+          (orderJson && orderJson.error) ||
+            "Could not create order. Please try again.",
+          true
+        );
+        return;
+      }
+      orderNumber = orderJson.orderNumber;
+      orderDraft.order_number = orderNumber;
+      console.log("Airtable order created:", orderNumber);
+    } catch (err) {
+      console.error("Create order failed:", err);
+      showToast("Could not create order. Please try again.", true);
+      return;
+    }
+
+    // 2) Open Paystack with order_number in metadata (used by webhook)
+    const handler = PaystackPop.setup({
+      key: paystackKey,
+      email: email,
+      amount: amountKobo,
+      currency: "NGN",
+      // Do NOT pass our internal IZI-… as Paystack ref — let Paystack generate it
+      metadata: {
+        order_number: orderNumber,
+        order_id: orderDraft.id,
+        order_ref: ref,
+        custom_fields: [
+          {
+            display_name: "Customer Name",
+            variable_name: "customer_name",
+            value: name,
+          },
+          {
+            display_name: "Phone",
+            variable_name: "phone",
+            value: phone,
+          },
+          {
+            display_name: "Order Number",
+            variable_name: "order_number",
+            value: orderNumber,
+          },
+        ],
+      },
     // Fires only after a successful payment (Paystack's success callback)
     callback: function (response) {
       // ONLY Paystack's own reference field — never our internal IZI-… order id
@@ -632,7 +680,7 @@ function placeOrder(e) {
       // Verify on our server before trusting the payment
       (async function completeVerifiedOrder() {
         try {
-          const verifyRes = await fetch("https://izi-backend-zggj.onrender.com/verify-payment", {
+          const verifyRes = await fetch(API_BASE + "/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -660,6 +708,7 @@ function placeOrder(e) {
             ...orderDraft,
             status: "paid",
             paystack_reference: paystackReference,
+            order_number: orderNumber,
             // keep our internal order reference for records/display
             ref: orderDraft.ref,
           };
@@ -677,7 +726,7 @@ function placeOrder(e) {
           document.getElementById("view-success").classList.add("active");
           document.getElementById("successRef").textContent =
             "Order " +
-            orderDraft.ref +
+            orderNumber +
             " · " +
             paystackReference +
             " · " +
@@ -699,7 +748,9 @@ function placeOrder(e) {
     },
   });
 
-  handler.openIframe();
+    handler.openIframe();
+  })();
+
   return false;
 }
 
