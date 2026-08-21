@@ -3,13 +3,14 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v10";
+const STORAGE_KEY = "izi-catalog-v12";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
 const NEWS_KEY = "izi-newsletter-v1";
 const GATE_CODE = "IZI2026";
 const FREE_SHIP_AT = 75000;
+/** Fallback size list when a product has no sizes[] */
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 
 let catalog = [];
@@ -24,47 +25,54 @@ let modalSize = "M";
 let modalQty = 1;
 let freqMatchId = null;
 
+/** Encode path segments so merch filenames with spaces load correctly */
+function productImageSrc(path) {
+  if (!path) return "";
+  return String(path)
+    .split("/")
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+}
+
 /*
-  Live drop (restored):
-  p1 big  = The Mad Consortium @ ₦50,000
-  p2 tall = Craft Youth Tee — Red
-  p3      = Go Izi Baby Tee — White
-  p4      = Marked As Different
-  Hero    = original hero.jpg
-  Manifesto bg = craizi girl
+  Catalog sourced from /merch (do not touch: craizi girl, go izi baby, izi boys, izi white craizi tee)
 */
 const SEED_PRODUCTS = [
   {
     id: "p1",
-    name: "The Mad Consortium",
-    price: 50000,
+    name: "iZi Longsleeve Shirt",
+    price: 60000,
     compareAt: null,
     category: "Tops",
-    subcategory: "Tees",
+    subcategory: "Long Sleeves",
     tag: "New",
     size: "big",
+    sizes: ["XL", "XXL"],
+    shade: null,
     visible: true,
     inStock: true,
     colors: 1,
     description:
-      "The Mad Consortium — iZi Executive Club. Heavyweight cotton, cut for a relaxed fit that moves with you.",
-    image: "assets/izi-shirt.jpg",
+      "A clean white long-sleeve button-up elevated with the signature iZi chest mark and the MAD Consortium / iZi Executive Club graphic on the back. A refined take on iZi streetwear.",
+    image: "merch/izi shirt .jpeg",
   },
   {
     id: "p2",
-    name: "Craft Youth Tee — Red",
-    price: 25000,
+    name: "FVCK LOVE Tee – Black",
+    price: 40000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
     tag: "New",
     size: "tall",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
     visible: true,
     inStock: true,
-    colors: 2,
+    colors: 1,
     description:
-      "The flagship Drop 001 piece. Heavyweight cotton, distressed graphic print, cut for a relaxed fit that moves with you.",
-    image: "assets/product-craft-youth-red.jpg",
+      "A bold iZi statement piece featuring the FVCK LOVE / LIFE AIN'T iZi graphic. Clean, rebellious streetwear built around the iZi attitude.",
+    image: "merch/FVCK LOVE Black Tee.png",
   },
   {
     id: "p3",
@@ -75,28 +83,286 @@ const SEED_PRODUCTS = [
     subcategory: "Tees",
     tag: "",
     size: "normal",
-    visible: true,
-    inStock: true,
-    colors: 3,
-    description:
-      'The signature lip graphic that started it all. Fitted cut, soft-hand print, comes in white and pink.',
-    image: "assets/product-go-izi-baby-merch.png",
-  },
-  {
-    id: "p4",
-    name: "Marked As Different",
-    price: 35000,
-    compareAt: null,
-    category: "Tops",
-    subcategory: "Long Sleeves",
-    tag: "Limited",
-    size: "normal",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    shade: null,
     visible: true,
     inStock: true,
     colors: 1,
     description:
-      'Long sleeve statement piece. "IZI iz mad, so are you" — for the ones who never blended in and stopped trying to.',
-    image: "assets/product-marked-as-different.jpg",
+      "The signature lip graphic that started it all. Fitted cut, soft-hand print, comes in white and pink.",
+    image: "assets/product-go-izi-baby-merch.png",
+  },
+  {
+    id: "p4",
+    name: "FVCK LOVE Side-Slit Sleeveless",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A statement sleeveless piece featuring the FVCK LOVE / LIFE AIN'T iZi graphic, finished with side slits for a relaxed, edgy fit.",
+    image: "merch/FVCK LOVE Side Slit Sleeveless.png",
+  },
+  {
+    id: "p5",
+    name: "iZi iZ MAD Trucker",
+    price: 15000,
+    compareAt: null,
+    category: "Headwear",
+    subcategory: "Caps",
+    tag: "New",
+    size: "normal",
+    sizes: ["OS"],
+    shade: "Pink/White",
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A statement iZi trucker combining the iZi identity with the MAD aesthetic. Designed to finish any fit with effortless steeze.",
+    image: "merch/iZi iZ MAD Trucker.png",
+  },
+  {
+    id: "p6",
+    name: "iZi X The Journey Romper",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Onesies",
+    tag: "New",
+    size: "normal",
+    sizes: ["L", "XL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A fitted iZi romper combining comfort and attitude with the signature iZi X The Journey aesthetic. Made for a standout casual look.",
+    image: "merch/iZi X The Journey Romper.png",
+  },
+  {
+    id: "p7",
+    name: "iZiPlayer Ash Short",
+    price: 25000,
+    compareAt: null,
+    category: "Bottoms",
+    subcategory: "Shorts",
+    tag: "",
+    size: "normal",
+    sizes: ["Free Size"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Ash grey iZiPlayer shorts featuring signature iZi branding and 23 detailing. A clean everyday streetwear essential.",
+    image: "merch/iZiPlayer Ash Short.png",
+  },
+  {
+    id: "p8",
+    name: "iZiPlayer Black Short",
+    price: 25000,
+    compareAt: null,
+    category: "Bottoms",
+    subcategory: "Shorts",
+    tag: "",
+    size: "normal",
+    sizes: ["Free Size"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Classic black iZiPlayer shorts featuring signature iZi branding and 23 detailing. Minimal, versatile and easy to style.",
+    image: "merch/iZiPlayer Black Short.png",
+  },
+  {
+    id: "p9",
+    name: "iZiPlayer Brown Short",
+    price: 25000,
+    compareAt: null,
+    category: "Bottoms",
+    subcategory: "Shorts",
+    tag: "",
+    size: "normal",
+    sizes: ["Free Size"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Brown iZiPlayer shorts featuring signature iZi branding and 23 detailing for a different take on the iZiPlayer aesthetic.",
+    image: "merch/iZiPlayer Brown Short.png",
+  },
+  {
+    id: "p10",
+    name: "iZiPlayer Raglan Longsleeve",
+    price: 55000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Long Sleeves",
+    tag: "New",
+    size: "normal",
+    sizes: ["XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A statement raglan longsleeve featuring the iconic 23 / iZiPlayer graphic. Classic athletic styling reworked with the iZi identity.",
+    image: "merch/iZiPlayer Raglan Longsleeve.png",
+  },
+  {
+    id: "p11",
+    name: "NEED 4 STEEZE Zip-Up Hoodie",
+    price: 65000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Hoodies",
+    tag: "New",
+    size: "normal",
+    sizes: ["XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A statement zip-up hoodie built around the NEED 4 STEEZE mentality. Bold graphics and iZi details designed for maximum steeze.",
+    image: "merch/NEED 4 STEEZE Zip Up Hoodie.png",
+  },
+  {
+    id: "p12",
+    name: "WHATZ FUNNY Snapback – Black",
+    price: 15000,
+    compareAt: null,
+    category: "Headwear",
+    subcategory: "Caps",
+    tag: "",
+    size: "normal",
+    sizes: ["OS"],
+    shade: "Black",
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A playful statement snapback featuring the WHATZ FUNNY aesthetic. A versatile accessory with plenty personality.",
+    image: "merch/WHATZ FUNNY Snapback.png",
+  },
+  {
+    id: "p13",
+    name: "WHATZ FUNNY Snapback – Red",
+    price: 15000,
+    compareAt: null,
+    category: "Headwear",
+    subcategory: "Caps",
+    tag: "",
+    size: "normal",
+    sizes: ["OS"],
+    shade: "Red",
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The red colourway of the WHATZ FUNNY snapback, bringing a louder pop of colour to the iZi aesthetic.",
+    image: "merch/Red WHATZ FUNNY Snapback - Copy.png",
+  },
+  {
+    id: "p14",
+    name: "WE THE FRIENDZ Tee – Army Green",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Army green WE THE FRIENDZ tee featuring the signature WE THE FRIENDZ / MAMA WARNED YOU ABOUT graphic.",
+    image: "merch/WTFMWYA Army Green Tee.png",
+  },
+  {
+    id: "p15",
+    name: "WE THE FRIENDZ Tee – Baby Pink",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A softer colourway of the WE THE FRIENDZ statement, pairing baby pink with the collection's signature graphic and playful attitude.",
+    image: "merch/WTFMWYA Baby Pink Tee.png",
+  },
+  {
+    id: "p16",
+    name: "WE THE FRIENDZ Tee – Black",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A bold black WE THE FRIENDZ tee featuring the signature MAMA WARNED YOU ABOUT graphic.",
+    image: "merch/WTFMWYA Black Tee.png",
+  },
+  {
+    id: "p17",
+    name: "WE THE FRIENDZ Tee – Sky Blue",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Sky blue WE THE FRIENDZ tee featuring the signature collection graphic. Bright, playful and unmistakably iZi.",
+    image: "merch/WTFMWYA Sky Blue Tee.png",
+  },
+  {
+    id: "p18",
+    name: "WE THE FRIENDZ Tee – White",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "Coming Soon",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: false,
+    colors: 1,
+    description:
+      "Clean white WE THE FRIENDZ tee featuring the signature WE THE FRIENDZ / MAMA WARNED YOU ABOUT graphic.",
+    // No matching merch image yet — placeholder
+    image: "",
+    comingSoon: true,
   },
 ];
 
@@ -219,18 +485,14 @@ function renderBento() {
   if (!grid) return;
   normalizeCatalogImages();
 
-  // Fixed display order so mobile never reshuffles tiles
-  const order = ["p1", "p2", "p3", "p4"];
+  // Stable id order (p1, p2, …) then any extras
   const visible = catalog
     .filter((p) => p.visible)
     .slice()
     .sort((a, b) => {
-      const ia = order.indexOf(a.id);
-      const ib = order.indexOf(b.id);
-      if (ia === -1 && ib === -1) return 0;
-      if (ia === -1) return 1;
-      if (ib === -1) return -1;
-      return ia - ib;
+      const na = parseInt(String(a.id).replace(/\D/g, ""), 10) || 0;
+      const nb = parseInt(String(b.id).replace(/\D/g, ""), 10) || 0;
+      return na - nb;
     });
 
   const stat = document.getElementById("statCount");
@@ -243,21 +505,25 @@ function renderBento() {
   }
 
   grid.innerHTML = visible
-    .map(
-      (p) => `
+    .map((p) => {
+      const src = productImageSrc(p.image);
+      const imgHtml = src
+        ? `<img src="${src}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">`
+        : `<div class="sc-img ph" style="position:absolute;inset:0;margin:0;border:none;border-radius:0;"><span class="ph-label">Coming Soon</span></div>`;
+      return `
     <div class="bento-item" data-product="${escapeHtml(p.id)}" data-size="${p.size || "normal"}" onclick="openModal('${p.id}')"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${p.id}');}"
          role="button" tabindex="0" aria-label="View ${escapeHtml(p.name)}">
-      <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">
+      ${imgHtml}
       <div class="shade"></div>
       ${p.tag ? `<span class="badge">${escapeHtml(p.tag)}</span>` : ""}
       <div class="info">
-        <div class="cat">${escapeHtml(p.category)}</div>
+        <div class="cat">${escapeHtml(p.category)}${p.shade ? " · " + escapeHtml(p.shade) : ""}</div>
         <div class="name">${escapeHtml(p.name)}</div>
         <div class="price">${priceLine(p)}</div>
       </div>
-    </div>`
-    )
+    </div>`;
+    })
     .join("");
 }
 
@@ -266,26 +532,38 @@ function openModal(id) {
   const p = catalog.find((x) => x.id === id);
   if (!p) return;
   modalProduct = p;
-  modalSize = "M";
+  const availableSizes =
+    Array.isArray(p.sizes) && p.sizes.length ? p.sizes : SIZES.slice();
+  modalSize = availableSizes[0];
   modalQty = 1;
 
-  document.getElementById("mImg").src = p.image;
-  document.getElementById("mImg").alt = p.name;
+  const mImg = document.getElementById("mImg");
+  const src = productImageSrc(p.image);
+  if (src) {
+    mImg.src = src;
+    mImg.style.display = "";
+  } else {
+    mImg.removeAttribute("src");
+    mImg.style.display = "none";
+  }
+  mImg.alt = p.name;
   // Flat product shots (front+back shirt) — zoom out in modal
   const mImgWrap = document.querySelector("#modalOverlay .m-img");
   if (mImgWrap) {
     mImgWrap.classList.toggle(
       "flat-product",
-      p.id === "p1" || /izi-shirt/i.test(p.image || "")
+      p.id === "p1" || /izi shirt/i.test(p.image || "")
     );
   }
   document.getElementById("mCat").textContent =
-    p.category + (p.subcategory ? " · " + p.subcategory : "");
+    p.category +
+    (p.subcategory ? " · " + p.subcategory : "") +
+    (p.shade ? " · " + p.shade : "");
   document.getElementById("mName").textContent = p.name;
   document.getElementById("mPrice").innerHTML =
     priceLine(p) +
-    (p.colors > 1
-      ? ` <span style="color:var(--fg-dim); font-size:12px;">— Available in ${p.colors} colors</span>`
+    (p.shade
+      ? ` <span style="color:var(--fg-dim); font-size:12px;">— ${escapeHtml(p.shade)}</span>`
       : "") +
     (p.inStock === false
       ? ` <span style="color:var(--riot-2); font-size:12px;">— Out of stock</span>`
@@ -294,15 +572,17 @@ function openModal(id) {
   document.getElementById("mQty").textContent = "1";
 
   const sizes = document.getElementById("mSizes");
-  sizes.innerHTML = SIZES.map(
-    (s) =>
-      `<button type="button" class="${s === modalSize ? "active" : ""}" onclick="selectModalSize('${s}')">${s}</button>`
-  ).join("");
+  sizes.innerHTML = availableSizes
+    .map(
+      (s) =>
+        `<button type="button" class="${s === modalSize ? "active" : ""}" onclick="selectModalSize('${String(s).replace(/'/g, "\\'")}')">${escapeHtml(s)}</button>`
+    )
+    .join("");
 
   const addBtn = document.getElementById("mAddBtn");
-  if (p.inStock === false) {
+  if (p.inStock === false || p.comingSoon) {
     addBtn.disabled = true;
-    addBtn.textContent = "Out of Stock";
+    addBtn.textContent = p.comingSoon ? "Coming Soon" : "Out of Stock";
   } else {
     addBtn.disabled = false;
     addBtn.textContent = "Add to Bag →";
@@ -411,7 +691,7 @@ function renderCart() {
     .map(
       (line) => `
     <div class="cart-line">
-      <img src="${line.image}" alt="">
+      <img src="${productImageSrc(line.image)}" alt="">
       <div>
         <div class="cl-name">${escapeHtml(line.name)}</div>
         <div class="cl-meta">Size ${escapeHtml(line.size)}</div>
@@ -504,7 +784,7 @@ function renderCheckoutSummary() {
     .map(
       (line) => `
     <div class="order-summary-line">
-      <img src="${line.image}" alt="">
+      <img src="${productImageSrc(line.image)}" alt="">
       <div style="flex:1;">
         <div class="os-name">${escapeHtml(line.name)}</div>
         <div class="os-meta">Size ${escapeHtml(line.size)} · Qty ${line.qty}</div>
@@ -806,7 +1086,7 @@ function onSearchInput() {
       (p) => `
     <div class="search-hit" onclick="closeSearch();openModal('${p.id}');" role="button" tabindex="0"
          onkeydown="if(event.key==='Enter'){closeSearch();openModal('${p.id}');}">
-      <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy">
+      <img src="${productImageSrc(p.image)}" alt="${escapeHtml(p.name)}" loading="lazy">
       <div class="sh-body">
         <div class="sh-name">${escapeHtml(p.name)}</div>
         <div class="sh-price">${priceLine(p)}</div>
@@ -928,7 +1208,7 @@ function renderStudioList() {
     .map(
       (p) => `
     <div class="studio-row ${p.visible ? "" : "hidden-item"}">
-      <img class="thumb" src="${p.image}" alt="">
+      <img class="thumb" src="${productImageSrc(p.image)}" alt="">
       <div class="r-name">${escapeHtml(p.name)}${
         p.tag ? `<span class="tag-chip">${escapeHtml(p.tag)}</span>` : ""
       }${
@@ -1385,22 +1665,31 @@ function renderShopGrid() {
 
   const grid = document.getElementById("shopGrid");
   let cardsHtml = items
-    .map(
-      (p) => `
+    .map((p) => {
+      const src = productImageSrc(p.image);
+      const media = src
+        ? `<img src="${src}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">`
+        : `<span class="ph-label">Coming Soon</span>`;
+      return `
     <article class="shop-card" data-product="${escapeHtml(p.id)}" onclick="openModal('${p.id}')"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${p.id}');}"
          role="button" tabindex="0" aria-label="View ${escapeHtml(p.name)}">
-      <div class="sc-img">
-        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">
+      <div class="sc-img${src ? "" : " ph"}">
+        ${media}
         ${p.tag ? `<span class="badge">${escapeHtml(p.tag)}</span>` : ""}
       </div>
       <div class="sc-meta">
         <div class="sc-name">${escapeHtml(p.name)}</div>
         <div class="sc-price">${priceLine(p)}</div>
-        ${p.colors > 1 ? `<div class="sc-colors">Available in ${p.colors} colors</div>` : ""}
+        ${p.shade ? `<div class="sc-colors">${escapeHtml(p.shade)}</div>` : ""}
+        ${
+          Array.isArray(p.sizes) && p.sizes.length
+            ? `<div class="sc-colors">${escapeHtml(p.sizes.join(" / "))}</div>`
+            : ""
+        }
       </div>
-    </article>`
-    )
+    </article>`;
+    })
     .join("");
 
   if (!items.length) {
@@ -1431,13 +1720,13 @@ const FREQUENCIES = {
   riot: {
     code: "01 · RIOT",
     title: "Riot frequency",
-    line: "You don't enter quiet. Craft Youth Red is the volume you already run at.",
+    line: "You don't enter quiet. FVCK LOVE black is the volume you already run at.",
     productId: "p2",
   },
   clean: {
     code: "02 · CLEAN",
     title: "Clean frequency",
-    line: "High contrast, zero noise. The Mad Consortium is the piece that holds the line.",
+    line: "High contrast, zero noise. The iZi Longsleeve Shirt holds the line.",
     productId: "p1",
   },
   signal: {
@@ -1449,8 +1738,8 @@ const FREQUENCIES = {
   static: {
     code: "04 · STATIC",
     title: "Static frequency",
-    line: "Limited run. Marked As Different — for the ones who stopped blending in on purpose.",
-    productId: "p4",
+    line: "NEED 4 STEEZE — maximum steeze, limited patience.",
+    productId: "p11",
   },
 };
 
@@ -1495,7 +1784,7 @@ function pickFrequency(key) {
 
   document.getElementById("freqMatchCard").innerHTML = `
     <button type="button" class="freq-product" onclick="closeFrequency(); openModal('${product.id}');">
-      <div class="fp-img"><img src="${product.image}" alt="${escapeHtml(product.name)}"></div>
+      <div class="fp-img"><img src="${productImageSrc(product.image)}" alt="${escapeHtml(product.name)}"></div>
       <div class="fp-body">
         <div class="fp-cat">${escapeHtml(product.category)}${
           product.subcategory ? " · " + escapeHtml(product.subcategory) : ""
