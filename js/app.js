@@ -851,11 +851,18 @@ function placeOrder(e) {
     "";
 
   if (!paystackKey) {
-    showToast("Payment is not configured. Please try again later.", true);
+    console.error(
+      "Paystack public key missing. Set NEXT_PUBLIC_PAYSTACK_KEY in Netlify env and redeploy (builds js/env.js)."
+    );
+    showToast(
+      "Payment key missing. Set NEXT_PUBLIC_PAYSTACK_KEY on Netlify and redeploy.",
+      true
+    );
     return false;
   }
 
   // 1) Create Pending order in Airtable BEFORE opening Paystack
+  //    Soft-fail: if Airtable/API is down, still open Paystack with a local order number
   (async function startCheckoutWithOrder() {
     let orderNumber = null;
     try {
@@ -871,21 +878,22 @@ function placeOrder(e) {
         }),
       });
       const orderJson = await orderRes.json().catch(() => null);
-      if (!orderRes.ok || !orderJson || !orderJson.orderNumber) {
-        showToast(
-          (orderJson && orderJson.error) ||
-            "Could not create order. Please try again.",
-          true
-        );
-        return;
+      if (orderRes.ok && orderJson && orderJson.orderNumber) {
+        orderNumber = orderJson.orderNumber;
+        orderDraft.order_number = orderNumber;
+        console.log("Airtable order created:", orderNumber);
+      } else {
+        console.warn("Create order API failed — continuing to Paystack:", orderJson);
+        orderNumber =
+          "ORD-" + Date.now().toString(36).toUpperCase();
+        orderDraft.order_number = orderNumber;
+        showToast("Order sync delayed — continuing to payment…", true);
       }
-      orderNumber = orderJson.orderNumber;
-      orderDraft.order_number = orderNumber;
-      console.log("Airtable order created:", orderNumber);
     } catch (err) {
-      console.error("Create order failed:", err);
-      showToast("Could not create order. Please try again.", true);
-      return;
+      console.error("Create order failed — continuing to Paystack:", err);
+      orderNumber = "ORD-" + Date.now().toString(36).toUpperCase();
+      orderDraft.order_number = orderNumber;
+      showToast("Order sync delayed — continuing to payment…", true);
     }
 
     // 2) Open Paystack with order_number in metadata (used by webhook)
