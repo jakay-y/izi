@@ -2106,21 +2106,24 @@ nav .right .bag-btn {
   max-width: 600px;
 }
 
-/* ---------- Shop page ---------- */
+/* ---------- Shop page (elevated — same IA, seamless hero blend) ---------- */
 #view-shop {
   display: none;
   min-height: 100vh;
+  background: var(--bg);
 }
 
+/* Hero → product section: one continuous dark surface, no hard cut */
 .shop-hero-strip {
   position: relative;
-  padding: 130px clamp(20px, 5vw, 56px) 52px;
-  border-bottom: 1px solid var(--line);
+  padding: 120px clamp(20px, 5vw, 56px) 72px;
+  border-bottom: none;
   overflow: hidden;
   background-color: var(--bg);
   background-image: var(--shop-hero-bg, none);
   background-size: cover;
   background-position: 50% 22%;
+  margin-bottom: 0;
 }
 
 .shop-hero-strip::before {
@@ -2128,67 +2131,119 @@ nav .right .bag-btn {
   position: absolute;
   inset: 0;
   z-index: 0;
+  /* Soft mid fade into pure --bg at the bottom — no hard edge */
   background: linear-gradient(
     180deg,
-    rgba(10, 10, 9, 0.88) 0%,
-    rgba(10, 10, 9, 0.72) 55%,
-    rgba(10, 10, 9, 0.94) 100%
+    rgba(10, 10, 9, 0.72) 0%,
+    rgba(10, 10, 9, 0.55) 35%,
+    rgba(10, 10, 9, 0.78) 62%,
+    rgba(10, 10, 9, 0.94) 82%,
+    var(--bg) 100%
+  );
+}
+
+.shop-hero-strip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 64px;
+  z-index: 1;
+  pointer-events: none;
+  /* Extra soft blend strip into product area */
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 9, 0) 0%,
+    var(--bg) 100%
   );
 }
 
 .shop-hero-strip .wrap {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+}
+
+.shop-hero-strip .eyebrow {
+  margin-bottom: 12px;
 }
 
 .shop-title {
   font-family: var(--display);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  font-size: clamp(34px, 5vw, 56px);
-  letter-spacing: -0.01em;
+  font-size: clamp(36px, 5.2vw, 58px);
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
 }
 
 .shop-hero-strip .shop-hero-sub {
-  margin-top: 14px;
+  margin-top: 16px;
   font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--fg-dim);
+  color: rgba(245, 242, 234, 0.72);
 }
 
 .shop-body {
-  padding: 48px 0 120px;
+  position: relative;
+  z-index: 2;
+  padding: 8px 0 88px;
+  margin-top: -28px; /* pull up into hero fade — kills the black gap */
+  background: transparent;
 }
 
 .shop-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 48px;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 40px;
   align-items: start;
 }
 
 @media (max-width: 900px) {
+  .shop-hero-strip {
+    padding: 108px clamp(16px, 4vw, 28px) 56px;
+  }
+
+  .shop-body {
+    margin-top: -20px;
+    padding: 4px 0 72px;
+  }
+
   .shop-layout {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
 }
 
+/* ----- Filters (premium dark chrome) ----- */
 .shop-filters {
   position: sticky;
-  top: 90px;
+  top: 88px;
+  padding: 18px 16px;
+  border: 1px solid rgba(245, 242, 234, 0.1);
+  border-radius: var(--radius-lg);
+  background: rgba(20, 19, 17, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 @media (max-width: 900px) {
   .shop-filters {
     position: static;
+    padding: 14px 14px 6px;
   }
 }
 
 .filter-group {
-  border-bottom: 1px solid var(--line);
-  padding: 4px 0;
+  border-bottom: 1px solid rgba(245, 242, 234, 0.08);
+  padding: 2px 0;
+}
+
+.filter-group:last-child {
+  border-bottom: none;
 }
 
 .filter-head {
@@ -2196,17 +2251,17 @@ nav .right .bag-btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 2px;
+  padding: 14px 2px;
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--fg);
 }
 
 .filter-head .minus {
   color: var(--riot-2);
-  font-size: 16px;
+  font-size: 15px;
   transition: transform 0.35s var(--ease);
 }
 
@@ -2228,7 +2283,7 @@ nav .right .bag-btn {
 .filter-body-inner {
   overflow: hidden;
   min-height: 0;
-  padding: 0 2px 20px;
+  padding: 2px 2px 18px;
 }
 
 .filter-group.collapsed .filter-body-inner {
@@ -2244,21 +2299,49 @@ nav .right .bag-btn {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--fg-dim);
   cursor: pointer;
+  user-select: none;
+}
+
+.stock-toggle .toggle {
+  width: 42px;
+  height: 24px;
+  background: var(--bg-3);
+  border: 1px solid rgba(245, 242, 234, 0.14);
+  border-radius: 999px;
+}
+
+.stock-toggle .toggle .knob {
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+}
+
+.stock-toggle .toggle.on {
+  background: rgba(224, 35, 60, 0.22);
+  border-color: var(--riot);
+}
+
+.stock-toggle .toggle.on .knob {
+  transform: translateX(18px);
+  background: var(--riot-2);
 }
 
 .price-hint {
-  font-size: 12.5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   color: var(--fg-dim);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .price-slider {
   position: relative;
-  height: 20px;
-  margin: 6px 0 20px;
+  height: 22px;
+  margin: 4px 0 18px;
 }
 
 .price-slider::before {
@@ -2267,18 +2350,21 @@ nav .right .bag-btn {
   top: 50%;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--line);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(245, 242, 234, 0.1);
   transform: translateY(-50%);
 }
 
 .price-fill {
   position: absolute;
   top: 50%;
-  height: 2px;
-  background: var(--riot);
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--riot), var(--riot-2));
   transform: translateY(-50%);
   z-index: 1;
+  box-shadow: 0 0 12px rgba(224, 35, 60, 0.35);
 }
 
 .price-slider input[type="range"] {
@@ -2292,39 +2378,41 @@ nav .right .bag-btn {
   background: none;
   pointer-events: none;
   margin: 0;
-  height: 20px;
+  height: 22px;
   z-index: 2;
 }
 
 .price-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   pointer-events: all;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--riot);
-  border: 2px solid var(--fg);
+  background: var(--fg);
+  border: 2px solid var(--riot);
+  box-shadow: 0 0 0 3px rgba(224, 35, 60, 0.18);
   cursor: pointer;
 }
 
 .price-slider input[type="range"]::-moz-range-thumb {
   pointer-events: all;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: var(--riot);
-  border: 2px solid var(--fg);
+  background: var(--fg);
+  border: 2px solid var(--riot);
+  box-shadow: 0 0 0 3px rgba(224, 35, 60, 0.18);
   cursor: pointer;
 }
 
 .price-slider input[type="range"]::-webkit-slider-runnable-track {
   background: transparent;
-  height: 2px;
+  height: 3px;
 }
 
 .price-slider input[type="range"]::-moz-range-track {
   background: transparent;
-  height: 2px;
+  height: 3px;
 }
 
 .price-inputs {
@@ -2337,16 +2425,22 @@ nav .right .bag-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(245, 242, 234, 0.12);
   border-radius: var(--radius-sm);
-  padding: 9px 11px;
+  padding: 10px 12px;
   flex: 1;
-  background: var(--bg-2);
+  background: rgba(10, 10, 9, 0.55);
+  transition: border-color 0.2s ease;
+}
+
+.price-input-box:focus-within {
+  border-color: rgba(224, 35, 60, 0.55);
 }
 
 .price-input-box span {
   color: var(--fg-dim);
-  font-size: 13px;
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
 .price-input-box input {
@@ -2361,43 +2455,41 @@ nav .right .bag-btn {
   outline: none;
 }
 
+/* ----- Toolbar ----- */
 .shop-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
   flex-wrap: wrap;
-  gap: 14px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--line);
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(245, 242, 234, 0.1);
 }
 
 .shop-count {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-dim);
 }
 
 .shop-sort select {
-  background: var(--bg-2);
-  border: 1px solid var(--line);
+  background: rgba(20, 19, 17, 0.9);
+  border: 1px solid rgba(245, 242, 234, 0.12);
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
+  padding: 11px 14px;
   font-family: var(--mono);
-  font-size: 11px;
-  transition: border-color 0.2s ease;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg);
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .shop-sort select:hover {
-  border-color: var(--line-strong);
-}
-
-.shop-sort select {
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--fg);
+  border-color: rgba(245, 242, 234, 0.22);
 }
 
 .shop-sort select:focus {
@@ -2405,82 +2497,92 @@ nav .right .bag-btn {
   border-color: var(--riot);
 }
 
+/* ----- Product grid ----- */
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px 28px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px 22px;
 }
 
 @media (max-width: 1100px) {
   .shop-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 28px 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
   }
 }
 
 @media (max-width: 560px) {
   .shop-grid {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 22px;
+    padding: 0 2px;
+  }
+
+  .shop-body .wrap {
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }
 
-/* Premium product cards — image-first fashion pattern */
+/* Premium product cards */
 .shop-card {
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 0;
-  transition: transform 0.35s var(--ease);
+  min-width: 0;
+  transition: transform 0.4s var(--ease);
 }
 
 .shop-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
 }
 
 .sc-img {
   position: relative;
   aspect-ratio: 3 / 4;
   background: var(--bg-2);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(245, 242, 234, 0.1);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   transition:
-    border-color 0.3s ease,
+    border-color 0.35s ease,
     box-shadow 0.4s var(--ease);
 }
 
 .shop-card:hover .sc-img {
-  border-color: rgba(245, 242, 234, 0.28);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  border-color: rgba(245, 242, 234, 0.22);
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(224, 35, 60, 0.12);
 }
 
 .sc-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 14%;
-  transition: transform 0.65s var(--ease);
+  object-position: 50% 12%;
+  transition: transform 0.7s var(--ease);
 }
 
 .shop-card:hover .sc-img img {
-  transform: scale(1.05);
+  transform: scale(1.045);
 }
 
 .sc-img::after {
   content: "View";
   position: absolute;
   left: 50%;
-  bottom: 16px;
-  transform: translate(-50%, 6px);
+  bottom: 14px;
+  transform: translate(-50%, 8px);
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bg);
   background: var(--fg);
-  padding: 10px 18px;
+  padding: 9px 16px;
   border-radius: 999px;
   opacity: 0;
   pointer-events: none;
@@ -2503,16 +2605,19 @@ nav .right .bag-btn {
 
 .sc-img .badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 11px;
+  left: 11px;
+  z-index: 3;
   font-family: var(--mono);
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 6px 10px;
   background: var(--riot);
   color: var(--fg);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(224, 35, 60, 0.35);
 }
 
 .sc-img.ph {
@@ -2533,24 +2638,40 @@ nav .right .bag-btn {
 .sc-meta {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 0 2px;
+  gap: 5px;
+  padding: 0 2px 2px;
 }
 
 .sc-name {
   font-family: var(--display);
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: -0.01em;
   line-height: 1.25;
+  color: var(--fg);
 }
 
 .sc-price {
   font-family: var(--mono);
-  font-size: 12.5px;
-  letter-spacing: 0.02em;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(245, 242, 234, 0.72);
+}
+
+.sc-colors {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
   color: var(--fg-dim);
+  margin-top: 1px;
+}
+
+@media (max-width: 900px) {
+  .shop-filters {
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 .sc-price .was,
@@ -2559,14 +2680,6 @@ nav .right .bag-btn {
   text-decoration: line-through;
   opacity: 0.6;
   margin-right: 8px;
-}
-
-.sc-colors {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--fg-dim);
-  margin-top: 6px;
-  letter-spacing: 0.02em;
 }
 
 /* ---------- Newsletter ---------- */
