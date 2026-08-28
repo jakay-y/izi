@@ -907,6 +907,7 @@ function placeOrder(e) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerName: name,
+          customerEmail: email,
           phoneNumber: phone,
           deliveryAddress: deliveryAddress,
           items: orderDraft.items,
@@ -943,6 +944,18 @@ function placeOrder(e) {
         order_number: orderNumber,
         order_id: orderDraft.id,
         order_ref: ref,
+        customer_name: name,
+        customer_email: email,
+        phone: phone,
+        delivery_address: deliveryAddress,
+        items: JSON.stringify(
+          orderDraft.items.map((c) => ({
+            name: c.name,
+            size: c.size,
+            qty: c.qty,
+            price: c.price,
+          }))
+        ),
         custom_fields: [
           {
             display_name: "Customer Name",
@@ -990,6 +1003,17 @@ function placeOrder(e) {
             body: JSON.stringify({
               reference: paystackReference, // Paystack callback response.reference only
               amount: amountKobo,
+              orderNumber: orderNumber,
+              customerName: name,
+              customerEmail: email,
+              phoneNumber: phone,
+              deliveryAddress: deliveryAddress,
+              items: orderDraft.items.map((c) => ({
+                name: c.name,
+                size: c.size,
+                qty: c.qty,
+                price: c.price,
+              })),
             }),
           });
 
