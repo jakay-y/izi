@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v15";
+const STORAGE_KEY = "izi-catalog-v16";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -343,6 +343,42 @@ const SEED_PRODUCTS = [
     description:
       "Sky blue WE THE FRIENDZ tee featuring the signature collection graphic. Bright, playful and unmistakably iZi.",
     image: "merch/WTFMWYA Sky Blue Tee.png",
+  },
+  {
+    id: "p18",
+    name: "DISTRESSED TELE Tee",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Distressed TELE tee with raw iZi energy. A bold graphic essential built for everyday streetwear.",
+    image: "merch/DISTRESSED TELE TEE.png",
+  },
+  {
+    id: "p19",
+    name: "WE THE FRIENDZ Tee – White",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Clean white WE THE FRIENDZ tee featuring the signature WE THE FRIENDZ / MAMA WARNED YOU ABOUT graphic.",
+    image: "merch/WE THE FRIENDZ Tee White.png",
   },
 ];
 
