@@ -1688,20 +1688,33 @@ nav .right .bag-btn {
   font-size: 13px;
 }
 
-/* Tablet: heading on top, images side-by-side */
+/* Tablet: heading on top, images side-by-side — equal side padding */
 @media (max-width: 900px) {
+  #community .wrap {
+    padding-left: clamp(16px, 4.5vw, 28px);
+    padding-right: clamp(16px, 4.5vw, 28px);
+    box-sizing: border-box;
+  }
+
   .comm-layout {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       "head head"
       "left right";
-    gap: 28px 16px;
+    gap: 24px 14px;
     align-items: start;
+    justify-items: stretch;
   }
 
   .comm-center {
     grid-area: head;
-    padding: 0 12px 8px;
+    padding: 0 4px 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .comm-center-title {
@@ -1711,6 +1724,12 @@ nav .right .bag-btn {
   .comm-center-copy {
     max-width: 320px;
     font-size: 15px;
+  }
+
+  .comm-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .comm-card:first-child {
@@ -1723,13 +1742,19 @@ nav .right .bag-btn {
 
   .comm-card-media {
     aspect-ratio: 3 / 3.8;
+    width: 100%;
   }
 }
 
-/* Phone: stack for clarity */
+/* Phone: stack — balanced equal padding both sides */
 @media (max-width: 560px) {
   #community {
     padding: 56px 0 64px;
+  }
+
+  #community .wrap {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .comm-layout {
@@ -1738,12 +1763,19 @@ nav .right .bag-btn {
       "head"
       "left"
       "right";
-    gap: 28px;
+    gap: 24px;
+    justify-items: center;
+  }
+
+  .comm-card {
+    width: 100%;
+    max-width: 100%;
   }
 
   .comm-card-media {
     aspect-ratio: 4 / 5;
-    max-height: 420px;
+    max-height: none;
+    width: 100%;
   }
 
   .comm-card-label {
@@ -1754,18 +1786,6 @@ nav .right .bag-btn {
     width: 100%;
     max-width: 260px;
   }
-}
-
-/* Paystack test button near merch / community */
-.pay-wrap {
-  display: flex;
-  justify-content: center;
-  margin-top: 36px;
-  padding-bottom: 8px;
-}
-
-#pay-button {
-  min-width: 180px;
 }
 
 /* ---------- Statement ---------- */

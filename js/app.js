@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v13";
+const STORAGE_KEY = "izi-catalog-v15";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -50,7 +50,7 @@ const SEED_PRODUCTS = [
     sizes: ["XL", "XXL"],
     shade: null,
     visible: true,
-    inStock: true,
+    inStock: false,
     colors: 1,
     description:
       "A clean white long-sleeve button-up elevated with the signature iZi chest mark and the MAD Consortium / iZi Executive Club graphic on the back. A refined take on iZi streetwear.",
@@ -113,7 +113,7 @@ const SEED_PRODUCTS = [
   {
     id: "p5",
     name: "iZi iZ MAD Trucker",
-    price: 15000,
+    price: 3000,
     compareAt: null,
     category: "Headwear",
     subcategory: "Caps",
@@ -239,7 +239,7 @@ const SEED_PRODUCTS = [
   {
     id: "p12",
     name: "WHATZ FUNNY Snapback – Black",
-    price: 15000,
+    price: 3000,
     compareAt: null,
     category: "Headwear",
     subcategory: "Caps",
@@ -257,7 +257,7 @@ const SEED_PRODUCTS = [
   {
     id: "p13",
     name: "WHATZ FUNNY Snapback – Red",
-    price: 15000,
+    price: 3000,
     compareAt: null,
     category: "Headwear",
     subcategory: "Caps",
