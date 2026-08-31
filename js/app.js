@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v16";
+const STORAGE_KEY = "izi-catalog-v17";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -39,27 +39,9 @@ function productImageSrc(path) {
 */
 const SEED_PRODUCTS = [
   {
-    id: "p1",
-    name: "iZi Longsleeve Shirt",
-    price: 60000,
-    compareAt: null,
-    category: "Tops",
-    subcategory: "Long Sleeves",
-    tag: "New",
-    size: "big",
-    sizes: ["XL", "XXL"],
-    shade: null,
-    visible: true,
-    inStock: false,
-    colors: 1,
-    description:
-      "A clean white long-sleeve button-up elevated with the signature iZi chest mark and the MAD Consortium / iZi Executive Club graphic on the back. A refined take on iZi streetwear.",
-    image: "merch/izi shirt .jpeg",
-  },
-  {
     id: "p2",
     name: "FVCK LOVE Tee – Black",
-    price: 40000,
+    price: 35000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -113,7 +95,7 @@ const SEED_PRODUCTS = [
   {
     id: "p5",
     name: "iZi iZ MAD Trucker",
-    price: 3000,
+    price: 15000,
     compareAt: null,
     category: "Headwear",
     subcategory: "Caps",
@@ -239,7 +221,7 @@ const SEED_PRODUCTS = [
   {
     id: "p12",
     name: "WHATZ FUNNY Snapback – Black",
-    price: 3000,
+    price: 15000,
     compareAt: null,
     category: "Headwear",
     subcategory: "Caps",
@@ -257,7 +239,7 @@ const SEED_PRODUCTS = [
   {
     id: "p13",
     name: "WHATZ FUNNY Snapback – Red",
-    price: 3000,
+    price: 15000,
     compareAt: null,
     category: "Headwear",
     subcategory: "Caps",
@@ -275,7 +257,7 @@ const SEED_PRODUCTS = [
   {
     id: "p14",
     name: "WE THE FRIENDZ Tee – Army Green",
-    price: 40000,
+    price: 35000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -293,7 +275,7 @@ const SEED_PRODUCTS = [
   {
     id: "p15",
     name: "WE THE FRIENDZ Tee – Baby Pink",
-    price: 40000,
+    price: 35000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -311,7 +293,7 @@ const SEED_PRODUCTS = [
   {
     id: "p16",
     name: "WE THE FRIENDZ Tee – Black",
-    price: 40000,
+    price: 35000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -329,7 +311,7 @@ const SEED_PRODUCTS = [
   {
     id: "p17",
     name: "WE THE FRIENDZ Tee – Sky Blue",
-    price: 40000,
+    price: 35000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -365,7 +347,7 @@ const SEED_PRODUCTS = [
   {
     id: "p19",
     name: "WE THE FRIENDZ Tee – White",
-    price: 40000,
+    price: 35000,
     compareAt: null,
     category: "Tops",
     subcategory: "Tees",
@@ -1774,8 +1756,8 @@ const FREQUENCIES = {
   clean: {
     code: "02 · CLEAN",
     title: "Clean frequency",
-    line: "High contrast, zero noise. The iZi Longsleeve Shirt holds the line.",
-    productId: "p1",
+    line: "High contrast, zero noise. WE THE FRIENDZ white holds the line.",
+    productId: "p19",
   },
   signal: {
     code: "03 · SIGNAL",
