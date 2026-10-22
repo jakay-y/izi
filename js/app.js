@@ -1154,18 +1154,186 @@ function submitNewsletter(e) {
   return false;
 }
 
-/* ---------- boot: logo loader → intro → site ---------- */
+/* ---------- boot: logo loader → onboarding film → site ---------- */
+const BOOT_MIN_LOGO_MS = 2000; // the logo always gets its moment
+const BOOT_MAX_WAIT_MS = 5000; // ...but a slow connection never traps anyone behind it
+// Wide screens show the vertical film as a column with an ambient glow (see styles.css)
+const INTRO_WIDE_QUERY = "(min-aspect-ratio: 4/5) and (min-height: 520px)";
+
+function introFilmAllowed() {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const conn = navigator.connection || {};
+  const constrained = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || "");
+  return !reduceMotion && !constrained;
+}
+
+/* Starts the film muted behind the loader so the browser buffers it (iOS ignores
+   `preload`), then rewinds to frame 0 and holds there. Resolves "ready", "blocked"
+   (autoplay refused) or "timeout" — never rejects, so the boot can't hang. */
+function warmUpIntroFilm(film, maxMs) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (state) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      film.removeEventListener("canplaythrough", onReady);
+      film.removeEventListener("error", onError);
+      resolve(state);
+    };
+    const onReady = () => {
+      film.pause();
+      film.currentTime = 0;
+      finish("ready");
+    };
+    const onError = () => finish("blocked");
+    const timer = setTimeout(() => {
+      // Too slow to start cleanly. Don't reveal a half-buffered, stuttering film:
+      // rewind and hold on frame 0 (identical to the poster) while it keeps loading.
+      film.pause();
+      film.currentTime = 0;
+      finish("timeout");
+    }, maxMs);
+
+    film.muted = true;
+    film.addEventListener("canplaythrough", onReady, { once: true });
+    film.addEventListener("error", onError, { once: true });
+    if (film.readyState >= 4) return onReady();
+
+    const attempt = film.play();
+    if (attempt && attempt.catch) {
+      // AbortError just means our own pause() interrupted it; only a refusal matters.
+      attempt.catch((err) => {
+        if (err && err.name === "NotAllowedError") finish("blocked");
+      });
+    }
+  });
+}
+
+/* Wide screens only: a tiny blurred copy of the film fills the sides. Skipped on
+   low-core devices, which keep the static blurred poster instead of a live blur. */
+function syncIntroAmbient() {
+  const intro = document.getElementById("view-intro");
+  const film = document.getElementById("introVideo");
+  const ambient = document.getElementById("introAmbient");
+  if (!intro || !film || !ambient || intro.classList.contains("hidden")) return;
+
+  const wide = window.matchMedia(INTRO_WIDE_QUERY).matches;
+  const capable = (navigator.hardwareConcurrency || 4) >= 4;
+  if (!wide || !capable || intro.dataset.film !== "on") {
+    ambient.pause();
+    intro.classList.remove("ambient-on");
+    return;
+  }
+  if (!ambient.getAttribute("src")) {
+    ambient.src = "assets/video/izi-onboarding-ambient.mp4";
+  }
+  ambient.muted = true;
+  ambient.addEventListener(
+    "playing",
+    () => intro.classList.add("ambient-on"),
+    { once: true }
+  );
+  ambient.currentTime = film.currentTime || 0; // stay in step with the main film
+  ambient.play().catch(() => {});
+}
+
+function beginIntroFilm() {
+  const intro = document.getElementById("view-intro");
+  const film = document.getElementById("introVideo");
+  // Guard: on a slow connection this can fire after the visitor has already entered
+  if (!intro || !film || intro.classList.contains("leaving") || intro.classList.contains("hidden")) return;
+  intro.dataset.film = "on";
+  film.play().catch(() => {}); // refused => the poster (its exact first frame) stays up
+  syncIntroAmbient();
+  window.matchMedia(INTRO_WIDE_QUERY).addEventListener("change", syncIntroAmbient);
+}
+
+function revealIntro(filmState) {
+  const intro = document.getElementById("view-intro");
+  const film = document.getElementById("introVideo");
+  if (!intro) return;
+  intro.classList.add("live"); // starts the staged text entrance + the film's settle
+
+  if (film && filmState === "ready") {
+    beginIntroFilm();
+  } else if (film && filmState === "timeout") {
+    // Slow connection: they already have the poster and the CTA. The film is short, so
+    // rather than trust the browser's "can play through" estimate (optimistic on slow
+    // links — it can stall near the end of the first pass), wait until it is fully
+    // buffered. The poster holds the screen perfectly in the meantime.
+    const startWhenBuffered = () => {
+      const end = film.buffered.length ? film.buffered.end(film.buffered.length - 1) : 0;
+      if (Number.isFinite(film.duration) && end >= film.duration - 0.1) {
+        film.removeEventListener("progress", startWhenBuffered);
+        beginIntroFilm();
+      }
+    };
+    film.addEventListener("progress", startWhenBuffered);
+    startWhenBuffered();
+  } else if (film && filmState === "blocked") {
+    // e.g. iOS Low Power Mode: let the first tap anywhere start the film
+    intro.addEventListener("pointerdown", () => film.play().catch(() => {}), { once: true });
+  }
+}
+
+/* Drops the decoder and cancels any download still in flight. The poster stays up. */
+function unloadVideo(video) {
+  video.pause();
+  video.removeAttribute("src");
+  video.querySelectorAll("source").forEach((s) => s.remove());
+  video.load();
+}
+
 function runBootSequence() {
   const loader = document.getElementById("view-loader");
   if (!loader) return;
-  // Hold on logo, then fade into character intro
-  setTimeout(() => {
+  const film = document.getElementById("introVideo");
+
+  const filmOk = film && introFilmAllowed();
+  // Reduced-motion / Data Saver / 2G visitors get the poster only — don't spend their
+  // bandwidth on a 2.8MB film they will never see.
+  if (film && !filmOk) unloadVideo(film);
+
+  const logoHold = new Promise((resolve) => setTimeout(resolve, BOOT_MIN_LOGO_MS));
+  const filmReady = filmOk
+    ? warmUpIntroFilm(film, BOOT_MAX_WAIT_MS)
+    : Promise.resolve("off");
+
+  // Leave the loader only when the logo has had its moment AND the film can start cleanly
+  Promise.all([logoHold, filmReady]).then(([, filmState]) => {
+    revealIntro(filmState);
     loader.classList.add("leave");
     setTimeout(() => {
       loader.classList.add("hidden");
       loader.setAttribute("aria-hidden", "true");
     }, 800);
-  }, 2000);
+  });
+}
+
+/* Save battery: a backgrounded tab shouldn't keep decoding video */
+document.addEventListener("visibilitychange", () => {
+  const intro = document.getElementById("view-intro");
+  if (!intro || intro.classList.contains("hidden") || intro.dataset.film !== "on") return;
+  const film = document.getElementById("introVideo");
+  if (document.hidden) {
+    film.pause();
+    document.getElementById("introAmbient").pause();
+  } else {
+    film.play().catch(() => {});
+    syncIntroAmbient();
+  }
+});
+
+/* Free the decoders and buffers once the film is no longer on screen */
+function releaseIntroFilm() {
+  window.matchMedia(INTRO_WIDE_QUERY).removeEventListener("change", syncIntroAmbient);
+  ["introVideo", "introAmbient"].forEach((id) => {
+    const video = document.getElementById(id);
+    if (!video) return;
+    video.removeAttribute("poster");
+    unloadVideo(video);
+  });
 }
 
 /* ---------- intro ---------- */
@@ -1179,6 +1347,7 @@ function enterSite() {
   setTimeout(() => {
     intro.classList.add("hidden");
     intro.setAttribute("aria-hidden", "true");
+    releaseIntroFilm();
   }, 1150);
 }
 

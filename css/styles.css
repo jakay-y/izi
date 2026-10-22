@@ -291,18 +291,12 @@ select:focus-visible {
   color: var(--riot-2);
 }
 
-/* ---------- Intro ---------- */
+/* ---------- Intro (onboarding film) ---------- */
 #view-intro {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
+  overflow: hidden;
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
@@ -321,11 +315,89 @@ select:focus-visible {
   display: none;
 }
 
+/* The stage is the film's frame. On portrait screens it IS the screen (full-bleed);
+   on wide screens it becomes a full-height 9:16 column (see media query below). */
+#view-intro .intro-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #000;
+  container-type: inline-size;
+}
+
+/* The film itself: no filters, no resting transform — it is shown exactly as encoded. */
+#view-intro .intro-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 50% 55%;
+  background: #000;
+  pointer-events: none;
+}
+
+/* Arrival: the film eases out from a slight push-in as the loader dissolves.
+   fill-mode "backwards" means it ends on a clean, untransformed frame. */
+#view-intro.live .intro-video {
+  animation: introSettle 1.8s var(--ease) backwards;
+  transform-origin: 50% 55%;
+}
+
+@keyframes introSettle {
+  from {
+    transform: scale(1.045);
+  }
+}
+
+/* Legibility scrims — only where text sits, so the middle of the frame (where the
+   Z mark lands) stays completely clean. */
+#view-intro .fade-top,
+#view-intro .fade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#view-intro .fade-top {
+  top: 0;
+  height: 36%;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 9, 0.62) 0%,
+    rgba(10, 10, 9, 0.32) 45%,
+    rgba(10, 10, 9, 0) 100%
+  );
+}
+
+#view-intro .fade-bottom {
+  bottom: 0;
+  height: 26%;
+  background: linear-gradient(
+    0deg,
+    rgba(10, 10, 9, 0.7) 0%,
+    rgba(10, 10, 9, 0.28) 55%,
+    rgba(10, 10, 9, 0) 100%
+  );
+}
+
+/* Ambient side glow + scanlines: wide screens only. */
+#view-intro .intro-ambient,
+#view-intro .scanfield {
+  display: none;
+}
+
 #view-intro .scanfield {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
-  z-index: 2;
   background: repeating-linear-gradient(
     0deg,
     rgba(245, 242, 234, 0.03) 0px,
@@ -344,129 +416,71 @@ select:focus-visible {
   99% { opacity: 0.7; }
 }
 
-#view-intro .photo-wrap {
+#view-intro .intro-ambient {
   position: absolute;
   inset: 0;
-  pointer-events: none;
+  z-index: 0;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--bg);
 }
 
-#view-intro .photo-wrap::after {
+/* Static fallback: a blurred poster, so the sides are never empty. */
+#view-intro .intro-ambient::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background: url("../assets/video/izi-onboarding-poster.jpg") center / cover no-repeat;
+  filter: blur(40px) saturate(1.25);
+}
+
+#view-intro .intro-ambient video {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
+  filter: blur(40px) saturate(1.25);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+
+#view-intro.ambient-on .intro-ambient video {
+  opacity: 1;
+}
+
+/* Dim so the column reads as the hero and the sides as light spill. */
+#view-intro .intro-ambient::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(10, 10, 9, 0.1) 0%,
-    rgba(10, 10, 9, 0) 40%,
-    rgba(10, 10, 9, 0.18) 100%
+  background: radial-gradient(
+    ellipse at center,
+    rgba(10, 10, 9, 0.38) 0%,
+    rgba(10, 10, 9, 0.62) 100%
   );
 }
 
-/* Intro photo — full-bleed zoom (no empty corners) */
-#view-intro .photo-wrap {
-  background: var(--bg);
-  overflow: hidden;
-}
-
-#view-intro .photo-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 42%;
-  opacity: 0;
-  transform: scale(1.08);
-  transform-origin: center center;
-  animation: introReveal 1.5s var(--ease) 0.15s forwards;
-  filter: contrast(1.05) saturate(1.06) brightness(0.98);
-  image-rendering: auto;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-@keyframes introReveal {
-  from {
-    opacity: 0;
-    transform: scale(1.12);
+/* Wide screens: the film is vertical, so show it whole — a full-height 9:16 column at
+   its native proportions (never cropped, never upscaled past its 1080x1920 source). */
+@media (min-aspect-ratio: 4/5) and (min-height: 520px) {
+  #view-intro .intro-ambient,
+  #view-intro .scanfield {
+    display: block;
   }
-  to {
-    opacity: 1;
-    transform: scale(1.08);
+
+  #view-intro .intro-stage {
+    inset: 0;
+    width: calc(100vh * 9 / 16);
+    width: calc(100dvh * 9 / 16);
+    margin-inline: auto;
+    box-shadow:
+      0 0 0 1px rgba(245, 242, 234, 0.08),
+      0 40px 140px rgba(0, 0, 0, 0.6);
   }
 }
 
-@media (min-width: 900px) {
-  #view-intro .photo-wrap img {
-    object-position: 48% 40%;
-  }
-}
-
-@media (max-width: 820px) {
-  #view-intro .photo-wrap img {
-    object-position: 50% 42%;
-  }
-}
-
-/* Minimal edge falls — photo stays primary */
-#view-intro .fade-top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 14%;
-  background: linear-gradient(180deg, rgba(10, 10, 9, 0.35) 0%, rgba(10, 10, 9, 0) 100%);
-  z-index: 2;
-  pointer-events: none;
-}
-
-#view-intro .fade-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 26%;
-  background: linear-gradient(0deg, rgba(10, 10, 9, 0.55) 0%, rgba(10, 10, 9, 0) 100%);
-  z-index: 2;
-  pointer-events: none;
-}
-
-#view-intro .fade-sides {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(10, 10, 9, 0.14) 0%,
-    rgba(10, 10, 9, 0) 12%,
-    rgba(10, 10, 9, 0) 88%,
-    rgba(10, 10, 9, 0.14) 100%
-  );
-  z-index: 2;
-  pointer-events: none;
-}
-
-@media (min-width: 900px) {
-  #view-intro .fade-sides {
-    background: linear-gradient(
-      90deg,
-      rgba(10, 10, 9, 0.08) 0%,
-      rgba(10, 10, 9, 0) 10%,
-      rgba(10, 10, 9, 0) 90%,
-      rgba(10, 10, 9, 0.08) 100%
-    );
-  }
-  #view-intro .fade-top {
-    height: 12%;
-  }
-  #view-intro .fade-bottom {
-    height: 22%;
-  }
-}
-
+/* ---- Overlay: headline up top, CTA at the bottom, Z mark zone left clear ---- */
 #view-intro .hud-top {
   position: relative;
   z-index: 3;
@@ -474,15 +488,16 @@ select:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 26px clamp(20px, 5vw, 56px) 0;
+  padding: 26px 20px 0;
+  padding: 26px clamp(18px, 6cqw, 36px) 0;
   font-family: var(--mono);
   font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--fg-dim);
+  color: var(--fg);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
   opacity: 0;
   transform: translateY(14px);
-  animation: rise 0.8s ease 0.5s forwards;
 }
 
 #view-intro .hud-top img {
@@ -494,34 +509,29 @@ select:focus-visible {
   padding: 2px;
 }
 
-@keyframes rise {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-#view-intro .content {
+#view-intro .intro-copy {
   position: relative;
   z-index: 3;
   text-align: center;
-  padding: 0 clamp(20px, 5vw, 56px) 64px;
+  padding: 22px 20px 0;
+  padding: clamp(16px, 3dvh, 28px) clamp(18px, 6cqw, 36px) 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 12px;
   opacity: 0;
   transform: translateY(14px);
-  animation: rise 0.9s ease 0.9s forwards;
 }
 
 #view-intro .tagline {
   font-family: var(--display);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: clamp(30px, 6vw, 58px);
+  font-size: 34px;
+  font-size: clamp(28px, 9.6cqw, 56px);
   line-height: 0.98;
   letter-spacing: -0.01em;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.5);
 }
 
 #view-intro .tagline i {
@@ -539,6 +549,36 @@ select:focus-visible {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 
+#view-intro .intro-cta {
+  position: relative;
+  z-index: 3;
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + 32px);
+  padding: 0 clamp(18px, 6cqw, 36px) calc(env(safe-area-inset-bottom, 0px) + max(28px, 5dvh));
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+/* Staged entrance — begins only once the loader hands over (JS adds .live). */
+#view-intro.live .hud-top {
+  animation: rise 0.8s ease 0.35s forwards;
+}
+#view-intro.live .intro-copy {
+  animation: rise 0.9s ease 0.6s forwards;
+}
+#view-intro.live .intro-cta {
+  animation: rise 0.9s ease 0.95s forwards;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 #enterBtn {
   position: relative;
   overflow: hidden;
@@ -554,6 +594,7 @@ select:focus-visible {
   padding: 18px 36px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   transition:
     transform 0.35s var(--ease),
@@ -561,9 +602,26 @@ select:focus-visible {
   box-shadow: var(--shadow-riot);
 }
 
+/* The film loops until they click, so the CTA breathes — one slow pulse per loop
+   (3.43s, matching the film) — to keep inviting the tap without nagging. */
+#view-intro.live #enterBtn {
+  animation: ctaBreathe 3.4333s ease-in-out 2.2s infinite;
+}
+
+@keyframes ctaBreathe {
+  0%,
+  100% {
+    box-shadow: var(--shadow-riot);
+  }
+  50% {
+    box-shadow: 0 16px 46px rgba(224, 35, 60, 0.5);
+  }
+}
+
 #enterBtn:hover {
   transform: translateY(-3px);
   box-shadow: 0 18px 50px rgba(224, 35, 60, 0.4);
+  animation: none;
 }
 
 #enterBtn .arrow {

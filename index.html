@@ -260,27 +260,46 @@
   <!-- ================= INTRO / LOADING (red tee, door — from original prototype) ================= -->
   <div id="view-intro">
     <div class="scanfield"></div>
-    <div class="photo-wrap">
-      <img
-        src="assets/intro-izi-boys.png"
-        alt="IZI — Craft Youth crew"
-        width="1600"
-        height="2000"
-        decoding="async"
-        fetchpriority="high"
+
+    <!-- Desktop only: the film is vertical, so on wide screens it sits as a full-height
+         column and this blurred, dimmed copy of it fills the sides. src is set by JS. -->
+    <div class="intro-ambient" aria-hidden="true">
+      <video id="introAmbient" muted loop playsinline preload="none" tabindex="-1" disablepictureinpicture></video>
+    </div>
+
+    <div class="intro-stage">
+      <!-- Onboarding film: 1080x1920 H.264, 30fps, ~3.4s, baked with a dissolve so the
+           last frame leads straight back into the first. Poster = its exact first frame. -->
+      <video
+        id="introVideo"
+        class="intro-video"
+        muted
+        loop
+        playsinline
+        preload="auto"
+        width="1080"
+        height="1920"
+        poster="assets/video/izi-onboarding-poster.jpg"
+        aria-hidden="true"
+        tabindex="-1"
+        disablepictureinpicture
+        disableremoteplayback
       >
-    </div>
-    <div class="fade-top"></div>
-    <div class="fade-sides"></div>
-    <div class="fade-bottom"></div>
-    <div class="hud-top">
-      <img src="assets/logo.png" alt="IZI">
-      <span>Drop 001 // Loaded</span>
-    </div>
-    <div class="content">
-      <div class="tagline">DON'T GO <i>iZi</i> ON 'EM</div>
-      <p class="sub">Pieces for those who dare to ztand out.<br>Step in and see the full lineup.</p>
-      <button id="enterBtn" onclick="enterSite()">Choose Your Character <span class="arrow">→</span></button>
+        <source src="assets/video/izi-onboarding.mp4" type="video/mp4">
+      </video>
+      <div class="fade-top"></div>
+      <div class="fade-bottom"></div>
+      <div class="hud-top">
+        <img src="assets/logo.png" alt="IZI">
+        <span>Drop 001 // Loaded</span>
+      </div>
+      <div class="intro-copy">
+        <div class="tagline">DON'T GO <i>iZi</i> ON 'EM</div>
+        <p class="sub">Pieces for those who dare to ztand out.<br>Step in and see the full lineup.</p>
+      </div>
+      <div class="intro-cta">
+        <button id="enterBtn" onclick="enterSite()">Choose Your Character <span class="arrow">→</span></button>
+      </div>
     </div>
   </div>
 
