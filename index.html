@@ -3,13 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>
+  /* Onboarding film: picks the cut that fits this screen (vertical for phones, a reframed
+     widescreen cut for landscape). The <video> in #view-intro calls IZI_INTRO.set() as soon
+     as it is parsed, so the download starts then; js/app.js drives playback.
+     The files are cached "forever" (netlify.toml): bump V whenever you replace anything in
+     assets/video/ — and the ?v= on the two poster <link rel="preload"> tags below. */
+  window.IZI_INTRO = (function () {
+    var V = "?v=1";
+    var FILMS = {
+      portrait: {
+        src: "assets/video/izi-onboarding.mp4" + V,
+        poster: "assets/video/izi-onboarding-poster.jpg" + V
+      },
+      wide: {
+        src: "assets/video/izi-onboarding-wide.mp4" + V,
+        poster: "assets/video/izi-onboarding-wide-poster.jpg" + V
+      }
+    };
+    var query = "(min-aspect-ratio: 17/20)"; // wide cut; keep in step with the media queries in css/styles.css
+    function kind() {
+      return window.matchMedia(query).matches ? "wide" : "portrait";
+    }
+    // Reduced-motion / Data Saver / 2G visitors get the poster only: no video bytes.
+    function allowed() {
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var conn = navigator.connection || {};
+      var constrained = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || "");
+      return !reduce && !constrained;
+    }
+    function set(film, withVideo) {
+      var k = kind();
+      film.dataset.kind = k;
+      film.poster = FILMS[k].poster;
+      if (withVideo) film.src = FILMS[k].src;
+    }
+    return { query: query, kind: kind, allowed: allowed, set: set };
+  })();
+</script>
 <meta name="description" content="IZI — Go Izi Baby. Graphic tees and raw layers, made on demand. Drop 001 live now.">
 <title>IZI — Go Izi Baby</title>
+<!-- Font stylesheets load without blocking scripts/first paint (they use display=swap) -->
 <link rel="preconnect" href="https://api.fontshare.com">
-<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=general-sans@400,500,600&f[]=space-mono@400,700&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=general-sans@400,500,600&f[]=space-mono@400,700&display=swap">
+<noscript><link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=general-sans@400,500,600&f[]=space-mono@400,700&display=swap"></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400;1,9..144,500&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400;1,9..144,500&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400;1,9..144,500&display=swap"></noscript>
+<meta name="theme-color" content="#000000">
+<!-- Onboarding film posters (the exact first frame of each cut), preloaded for the
+     screen shape that will actually use them. Keep the ?v= in step with V in the
+     script at the top of <head>. -->
+<link rel="preload" as="image" href="assets/video/izi-onboarding-poster.jpg?v=1" media="(max-aspect-ratio: 849/1000)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/video/izi-onboarding-wide-poster.jpg?v=1" media="(min-aspect-ratio: 85/100)" fetchpriority="high">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="icon" href="assets/logo.png" type="image/png">
 </head>
@@ -259,17 +306,10 @@
 
   <!-- ================= INTRO / LOADING (red tee, door — from original prototype) ================= -->
   <div id="view-intro">
-    <div class="scanfield"></div>
-
-    <!-- Desktop only: the film is vertical, so on wide screens it sits as a full-height
-         column and this blurred, dimmed copy of it fills the sides. src is set by JS. -->
-    <div class="intro-ambient" aria-hidden="true">
-      <video id="introAmbient" muted loop playsinline preload="none" tabindex="-1" disablepictureinpicture></video>
-    </div>
-
     <div class="intro-stage">
-      <!-- Onboarding film: 1080x1920 H.264, 30fps, ~3.4s, baked with a dissolve so the
-           last frame leads straight back into the first. Poster = its exact first frame. -->
+      <!-- Onboarding film: ~3.4s H.264 loop with a dissolve baked in so the last frame leads
+           straight back into the first. IZI_INTRO.set() (script in <head>) picks the cut that
+           fits the screen and sets src + poster; the poster is the exact first frame. -->
       <video
         id="introVideo"
         class="intro-video"
@@ -277,21 +317,18 @@
         loop
         playsinline
         preload="auto"
-        width="1080"
-        height="1920"
-        poster="assets/video/izi-onboarding-poster.jpg"
         aria-hidden="true"
         tabindex="-1"
         disablepictureinpicture
         disableremoteplayback
-      >
-        <source src="assets/video/izi-onboarding.mp4" type="video/mp4">
-      </video>
+      ></video>
+      <script>
+        IZI_INTRO.set(document.getElementById("introVideo"), IZI_INTRO.allowed());
+      </script>
       <div class="fade-top"></div>
       <div class="fade-bottom"></div>
       <div class="hud-top">
         <img src="assets/logo.png" alt="IZI">
-        <span>Drop 001 // Loaded</span>
       </div>
       <div class="intro-copy">
         <div class="tagline">DON'T GO <i>iZi</i> ON 'EM</div>
@@ -353,6 +390,12 @@
 
     <section class="shop-hero-strip">
       <div class="wrap">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="#" onclick="goHome();return false;">Home</a>
+          <span aria-hidden="true">›</span>
+          <a href="#" onclick="goShop('All');return false;">Shop</a>
+          <span id="crumbTail"></span>
+        </nav>
         <div class="eyebrow">Shop</div>
         <h2 class="shop-title" id="shopTitle">All Products</h2>
         <div class="shop-hero-sub" id="shopHeroSub">Drop 001 — made on demand, in small batches.</div>
@@ -360,48 +403,93 @@
     </section>
 
     <section class="shop-body">
-      <div class="wrap shop-layout">
-        <aside class="shop-filters">
-          <div class="filter-group">
-            <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Availability</span><span class="minus">−</span></button>
-            <div class="filter-body"><div class="filter-body-inner">
-              <label class="stock-toggle">
-                <button type="button" class="toggle" role="switch" aria-checked="false" id="stockToggle" onclick="toggleStockFilter()"><span class="knob"></span></button>
-                <span>In stock only</span>
-              </label>
-            </div></div>
-          </div>
-          <div class="filter-group">
-            <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Price</span><span class="minus">−</span></button>
-            <div class="filter-body"><div class="filter-body-inner">
-              <div class="price-hint" id="priceHint">The highest price is ₦0.00</div>
-              <div class="price-slider">
-                <div class="price-fill" id="priceFill"></div>
-                <input type="range" id="priceMinRange" min="0" max="100" value="0" oninput="onPriceRangeInput()" aria-label="Minimum price">
-                <input type="range" id="priceMaxRange" min="0" max="100" value="100" oninput="onPriceRangeInput()" aria-label="Maximum price">
-              </div>
-              <div class="price-inputs">
-                <div class="price-input-box"><span>₦</span><input type="number" id="priceMinNum" oninput="onPriceNumInput()" aria-label="Minimum price"></div>
-                <div class="price-input-box"><span>₦</span><input type="number" id="priceMaxNum" oninput="onPriceNumInput()" aria-label="Maximum price"></div>
-              </div>
-            </div></div>
-          </div>
-        </aside>
-
-        <div class="shop-main">
-          <div class="shop-toolbar">
-            <div class="shop-sort">
-              <select id="sortSelect" onchange="onSortChange()" aria-label="Sort products">
-                <option value="date-new">Date, New to Old</option>
-                <option value="price-asc">Price, Low to High</option>
-                <option value="price-desc">Price, High to Low</option>
-                <option value="name-asc">Name, A–Z</option>
-              </select>
+      <div class="wrap">
+        <div class="shop-layout">
+          <aside class="shop-filters" id="shopFilters" aria-label="Product filters">
+            <div class="filters-top">
+              <span>Filters</span>
+              <button type="button" class="filters-done" onclick="toggleShopFilters(false)">Done</button>
             </div>
-            <div class="shop-count" id="shopCount">0 Products</div>
+            <div class="filter-group">
+              <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Category</span><span class="minus">−</span></button>
+              <div class="filter-body"><div class="filter-body-inner">
+                <div class="cat-tree" id="categoryTree"></div>
+              </div></div>
+            </div>
+            <div class="filter-group">
+              <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Size</span><span class="minus">−</span></button>
+              <div class="filter-body"><div class="filter-body-inner">
+                <div class="size-chips" id="sizeChips"></div>
+              </div></div>
+            </div>
+            <div class="filter-group">
+              <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Price</span><span class="minus">−</span></button>
+              <div class="filter-body"><div class="filter-body-inner">
+                <div class="price-hint" id="priceHint">The highest price is ₦0.00</div>
+                <div class="price-slider">
+                  <div class="price-fill" id="priceFill"></div>
+                  <input type="range" id="priceMinRange" min="0" max="100" value="0" oninput="onPriceRangeInput()" aria-label="Minimum price">
+                  <input type="range" id="priceMaxRange" min="0" max="100" value="100" oninput="onPriceRangeInput()" aria-label="Maximum price">
+                </div>
+                <div class="price-inputs">
+                  <div class="price-input-box"><span>₦</span><input type="number" id="priceMinNum" oninput="onPriceNumInput()" aria-label="Minimum price"></div>
+                  <div class="price-input-box"><span>₦</span><input type="number" id="priceMaxNum" oninput="onPriceNumInput()" aria-label="Maximum price"></div>
+                </div>
+              </div></div>
+            </div>
+            <div class="filter-group">
+              <button type="button" class="filter-head" onclick="toggleFilterGroup(this)"><span>Availability</span><span class="minus">−</span></button>
+              <div class="filter-body"><div class="filter-body-inner">
+                <label class="stock-toggle">
+                  <button type="button" class="toggle" role="switch" aria-checked="false" id="stockToggle" onclick="toggleStockFilter()"><span class="knob"></span></button>
+                  <span>In stock only</span>
+                </label>
+              </div></div>
+            </div>
+          </aside>
+
+          <div class="shop-main">
+            <div class="shop-toolbar">
+              <div class="shop-count" id="shopCount" aria-live="polite">0 Products</div>
+              <div class="shop-tools">
+                <button type="button" class="shop-filter-btn" id="shopFilterBtn" onclick="toggleShopFilters()" aria-expanded="false" aria-controls="shopFilters">
+                  Filters <span class="fb-count" id="filterBadge" hidden>0</span>
+                </button>
+                <div class="shop-sort">
+                  <select id="sortSelect" onchange="onSortChange()" aria-label="Sort products">
+                    <option value="date-new">Date, New to Old</option>
+                    <option value="price-asc">Price, Low to High</option>
+                    <option value="price-desc">Price, High to Low</option>
+                    <option value="name-asc">Name, A–Z</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="active-filters" id="activeFilters" hidden></div>
+            <div id="shopGrid" class="shop-grid"></div>
+            <nav class="pager" id="shopPager" aria-label="Pagination" hidden></nav>
           </div>
-          <div id="shopGrid" class="shop-grid"></div>
         </div>
+
+        <section class="shop-promo" aria-label="Find your frequency">
+          <div class="shop-promo-img"><img src="assets/hero-craizi-girl.jpg" alt="" loading="lazy" decoding="async"></div>
+          <div class="shop-promo-copy">
+            <div class="eyebrow">Not sure where to start?</div>
+            <h3>Find your frequency</h3>
+            <p>Pick a mood — RIOT, CLEAN, SIGNAL or STATIC — and we&#39;ll match you to a piece.</p>
+            <button type="button" class="btn-primary" onclick="openFrequency()">Find my frequency <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+
+        <section class="shop-news" aria-label="Newsletter">
+          <h3>Get first access to the next drop</h3>
+          <p>No spam. Just the drop, before everyone else.</p>
+          <form class="news-form" onsubmit="return submitNewsletter(event);">
+            <input type="email" placeholder="Enter your email" required autocomplete="email" aria-label="Email address">
+            <button type="submit">Notify Me →</button>
+          </form>
+          <div class="news-note" aria-live="polite"></div>
+        </section>
       </div>
     </section>
 

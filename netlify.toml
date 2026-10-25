@@ -5,5 +5,13 @@
   command = "node scripts/generate-env.js"
   publish = "."
 
+# Onboarding film + posters: cached for a year. They are referenced with a ?v= query
+# (see the inline script in index.html), so replacing a file = bump that version and
+# every visitor fetches the new one; everyone else never re-downloads ~3MB.
+[[headers]]
+  for = "/assets/video/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # Optional: skip publishing server folder as static assets is fine;
 # secret stays only in server/.env on Render, never in the browser.

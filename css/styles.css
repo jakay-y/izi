@@ -299,7 +299,7 @@ select:focus-visible {
   overflow: hidden;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--bg);
+  background: #000;
   transition:
     transform 1.05s var(--ease-exit),
     opacity 0.9s ease 0.1s;
@@ -315,20 +315,34 @@ select:focus-visible {
   display: none;
 }
 
-/* The stage is the film's frame. On portrait screens it IS the screen (full-bleed);
-   on wide screens it becomes a full-height 9:16 column (see media query below). */
+/* The stage fills the screen; the film covers it edge to edge on every device. */
 #view-intro .intro-stage {
   position: absolute;
   inset: 0;
-  z-index: 2;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: #000;
   container-type: inline-size;
+
+  /* Spacing that respects notches / rounded corners / home indicators on every device.
+     (--px uses cqw, which resolves against the stage wherever it is *used*.) */
+  --px: 20px;
+  --pl: max(var(--px), env(safe-area-inset-left, 0px));
+  --pr: max(var(--px), env(safe-area-inset-right, 0px));
+  --pt: env(safe-area-inset-top, 0px);
+  --pb: env(safe-area-inset-bottom, 0px);
 }
 
-/* The film itself: no filters, no resting transform — it is shown exactly as encoded. */
+@supports (width: 1cqw) {
+  #view-intro .intro-stage {
+    --px: clamp(18px, 6cqw, 36px);
+  }
+}
+
+/* The film itself: no filters, no resting transform — shown exactly as encoded.
+   Phones get the vertical cut; landscape screens get a dedicated widescreen cut
+   (see js/app.js), so `cover` barely crops either. */
 #view-intro .intro-video {
   position: absolute;
   inset: 0;
@@ -336,9 +350,23 @@ select:focus-visible {
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 50% 55%;
+  object-position: 50% 50%;
   background: #000;
   pointer-events: none;
+}
+
+#view-intro .intro-video[data-kind="portrait"] {
+  object-position: 50% 55%;
+}
+
+#view-intro .intro-video[data-kind="wide"] {
+  object-position: 50% 70%;
+}
+
+@media (min-aspect-ratio: 17/20) and (max-height: 480px) {
+  #view-intro .intro-video[data-kind="wide"] {
+    object-position: 50% 88%;
+  }
 }
 
 /* Arrival: the film eases out from a slight push-in as the loader dissolves.
@@ -387,100 +415,7 @@ select:focus-visible {
   );
 }
 
-/* Ambient side glow + scanlines: wide screens only. */
-#view-intro .intro-ambient,
-#view-intro .scanfield {
-  display: none;
-}
-
-#view-intro .scanfield {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(245, 242, 234, 0.03) 0px,
-    rgba(245, 242, 234, 0.03) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  animation: flicker 3.4s infinite steps(60);
-}
-
-@keyframes flicker {
-  0%,
-  97%,
-  100% { opacity: 0.55; }
-  98% { opacity: 0.2; }
-  99% { opacity: 0.7; }
-}
-
-#view-intro .intro-ambient {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  background: var(--bg);
-}
-
-/* Static fallback: a blurred poster, so the sides are never empty. */
-#view-intro .intro-ambient::before {
-  content: "";
-  position: absolute;
-  inset: -8%;
-  background: url("../assets/video/izi-onboarding-poster.jpg") center / cover no-repeat;
-  filter: blur(40px) saturate(1.25);
-}
-
-#view-intro .intro-ambient video {
-  position: absolute;
-  inset: -8%;
-  width: 116%;
-  height: 116%;
-  object-fit: cover;
-  filter: blur(40px) saturate(1.25);
-  opacity: 0;
-  transition: opacity 1.2s ease;
-  pointer-events: none;
-}
-
-#view-intro.ambient-on .intro-ambient video {
-  opacity: 1;
-}
-
-/* Dim so the column reads as the hero and the sides as light spill. */
-#view-intro .intro-ambient::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(10, 10, 9, 0.38) 0%,
-    rgba(10, 10, 9, 0.62) 100%
-  );
-}
-
-/* Wide screens: the film is vertical, so show it whole — a full-height 9:16 column at
-   its native proportions (never cropped, never upscaled past its 1080x1920 source). */
-@media (min-aspect-ratio: 4/5) and (min-height: 520px) {
-  #view-intro .intro-ambient,
-  #view-intro .scanfield {
-    display: block;
-  }
-
-  #view-intro .intro-stage {
-    inset: 0;
-    width: calc(100vh * 9 / 16);
-    width: calc(100dvh * 9 / 16);
-    margin-inline: auto;
-    box-shadow:
-      0 0 0 1px rgba(245, 242, 234, 0.08),
-      0 40px 140px rgba(0, 0, 0, 0.6);
-  }
-}
-
-/* ---- Overlay: headline up top, CTA at the bottom, Z mark zone left clear ---- */
+/* ---- Overlay (portrait): headline up top, CTA at the bottom, Z zone left clear ---- */
 #view-intro .hud-top {
   position: relative;
   z-index: 3;
@@ -489,13 +424,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   padding: 26px 20px 0;
-  padding: 26px clamp(18px, 6cqw, 36px) 0;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--fg);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+  padding: calc(var(--pt) + 26px) var(--pr) 0 var(--pl);
   opacity: 0;
   transform: translateY(14px);
 }
@@ -514,7 +443,7 @@ select:focus-visible {
   z-index: 3;
   text-align: center;
   padding: 22px 20px 0;
-  padding: clamp(16px, 3dvh, 28px) clamp(18px, 6cqw, 36px) 0;
+  padding: clamp(16px, 3dvh, 28px) var(--pr) 0 var(--pl);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -555,10 +484,99 @@ select:focus-visible {
   margin-top: auto;
   display: flex;
   justify-content: center;
-  padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + 32px);
-  padding: 0 clamp(18px, 6cqw, 36px) calc(env(safe-area-inset-bottom, 0px) + max(28px, 5dvh));
+  padding: 0 20px 32px;
+  padding: 0 var(--pr) calc(var(--pb) + max(28px, 5dvh)) var(--pl);
   opacity: 0;
   transform: translateY(14px);
+}
+
+/* ---- Overlay (landscape): headline bottom-left, CTA bottom-right ----
+   The widescreen cut tilts down to the Z and holds there, so the Z sits big in the
+   middle of the frame; text lives along the bottom edge, clear of it. */
+@media (min-aspect-ratio: 17/20) {
+  #view-intro .intro-stage {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "hud hud"
+      "gap gap"
+      "copy cta";
+    align-items: end;
+    padding-bottom: 32px;
+    padding-bottom: calc(var(--pb) + clamp(24px, 6dvh, 64px));
+  }
+
+  @supports (width: 1cqw) {
+    #view-intro .intro-stage {
+      --px: clamp(24px, 4cqw, 64px);
+    }
+  }
+
+  #view-intro .fade-top {
+    height: 20%;
+  }
+
+  #view-intro .fade-bottom {
+    height: 40%;
+  }
+
+  #view-intro .hud-top {
+    grid-area: hud;
+    align-self: start;
+    padding: 28px 24px 0;
+    padding: calc(var(--pt) + 28px) var(--pr) 0 var(--pl);
+  }
+
+  #view-intro .intro-copy {
+    grid-area: copy;
+    align-items: flex-start;
+    text-align: left;
+    gap: 14px;
+    padding: 0 24px;
+    padding: 0 var(--pr) 0 var(--pl);
+  }
+
+  #view-intro .tagline {
+    font-size: 40px;
+    font-size: clamp(30px, 3.8cqw, 60px);
+  }
+
+  #view-intro .sub {
+    max-width: 440px;
+  }
+
+  #view-intro .intro-cta {
+    grid-area: cta;
+    margin-top: 0;
+    padding: 0 24px 0 0;
+    padding: 0 var(--pr) 0 0;
+  }
+}
+
+/* Very short landscape screens (e.g. 568x320): compact overlay so nothing crowds the Z */
+@media (min-aspect-ratio: 17/20) and (max-height: 360px) {
+  #view-intro .intro-stage {
+    padding-bottom: 14px;
+    padding-bottom: calc(var(--pb) + 14px);
+  }
+  #view-intro .hud-top {
+    padding-top: calc(var(--pt) + 14px);
+  }
+  #view-intro .hud-top img {
+    width: 26px;
+    height: 26px;
+  }
+  #view-intro .tagline {
+    font-size: 22px;
+  }
+}
+
+/* Short landscape screens (phones on their side): the sub-copy would run into the Z */
+@media (min-aspect-ratio: 17/20) and (max-height: 430px) {
+  #view-intro .sub {
+    display: none;
+  }
 }
 
 /* Staged entrance — begins only once the loader hands over (JS adds .live). */
@@ -630,6 +648,28 @@ select:focus-visible {
 
 #enterBtn:hover .arrow {
   transform: translateX(4px);
+}
+
+/* Small phones (e.g. 320px wide): keep the whole button inside the screen */
+#enterBtn {
+  max-width: 100%;
+}
+
+@media (min-aspect-ratio: 17/20) and (max-height: 360px) {
+  #enterBtn {
+    padding: 14px 20px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (max-width: 380px) {
+  #enterBtn {
+    padding: 16px 20px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    gap: 10px;
+  }
 }
 
 /* ---------- Logo boot loader ---------- */
@@ -2738,6 +2778,398 @@ nav .right .bag-btn {
   text-decoration: line-through;
   opacity: 0.6;
   margin-right: 8px;
+}
+
+/* ---------- Shop: breadcrumb, category tree, size chips, active filters, pager, banner ---------- */
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.crumbs a,
+.crumb-btn {
+  color: var(--fg-dim);
+  transition: color 0.2s ease;
+}
+.crumbs a:hover,
+.crumb-btn:hover {
+  color: var(--fg);
+}
+.crumbs [aria-current="page"] {
+  color: var(--fg);
+}
+.crumb-btn {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  padding: 0;
+}
+
+/* Category tree */
+.cat-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  text-align: left;
+  color: var(--fg);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.cat-row:hover:not(:disabled) {
+  background: rgba(245, 242, 234, 0.06);
+}
+.cat-row.active {
+  background: rgba(224, 35, 60, 0.14);
+}
+.cat-row.active .cat-count {
+  color: var(--riot-2);
+}
+.cat-row.sub {
+  width: calc(100% - 14px);
+  margin-left: 14px;
+  font-size: 12.5px;
+  color: rgba(245, 242, 234, 0.78);
+  border-left: 1px solid rgba(245, 242, 234, 0.12);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.cat-row:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.cat-count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--fg-dim);
+}
+
+/* Size chips */
+.size-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.size-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(245, 242, 234, 0.14);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.size-chip em {
+  font-style: normal;
+  font-size: 9.5px;
+  color: var(--fg-dim);
+}
+.size-chip:hover:not(:disabled) {
+  border-color: rgba(245, 242, 234, 0.34);
+}
+.size-chip.on {
+  border-color: var(--riot);
+  background: rgba(224, 35, 60, 0.16);
+}
+.size-chip.on em {
+  color: var(--riot-2);
+}
+.size-chip:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Toolbar */
+.shop-count b {
+  color: var(--fg);
+  font-weight: 700;
+}
+.shop-count .dim {
+  opacity: 0.7;
+}
+.shop-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.shop-filter-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: 1px solid rgba(245, 242, 234, 0.12);
+  border-radius: var(--radius-sm);
+  background: rgba(20, 19, 17, 0.9);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.fb-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--riot);
+  font-size: 10px;
+  color: var(--fg);
+}
+.fb-count[hidden],
+.active-filters[hidden],
+.pager[hidden] {
+  display: none;
+}
+
+/* Applied-filter chips */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 22px;
+}
+.f-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(245, 242, 234, 0.16);
+  border-radius: 999px;
+  background: rgba(20, 19, 17, 0.7);
+  font-size: 12.5px;
+  color: var(--fg);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.f-chip span {
+  font-size: 10px;
+  color: var(--fg-dim);
+}
+.f-chip:hover {
+  border-color: var(--riot);
+  background: rgba(224, 35, 60, 0.12);
+}
+.f-chip:hover span {
+  color: var(--riot-2);
+}
+.f-clear {
+  padding: 6px 4px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.f-clear:hover {
+  color: var(--fg);
+}
+
+/* Badges (Sale shows automatically when a product has a compareAt price) */
+.sc-badges {
+  position: absolute;
+  top: 11px;
+  left: 11px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.sc-badges .badge {
+  position: static;
+}
+.sc-img .badge.sale {
+  background: var(--fg);
+  color: var(--riot);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Pagination */
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 44px;
+}
+.pg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(245, 242, 234, 0.12);
+  border-radius: var(--radius-sm);
+  background: rgba(20, 19, 17, 0.7);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--fg);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.pg:hover:not(:disabled):not(.on) {
+  border-color: rgba(245, 242, 234, 0.34);
+}
+.pg.on {
+  border-color: var(--riot);
+  background: var(--riot);
+}
+.pg:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.pg-nav {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.pg-gap {
+  padding: 0 4px;
+  color: var(--fg-dim);
+}
+
+/* Banner: links to the Frequency quiz (no invented discounts) */
+.shop-promo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 72px;
+  border: 1px solid rgba(245, 242, 234, 0.1);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-2);
+}
+.shop-promo-img {
+  position: relative;
+  min-height: 320px;
+}
+.shop-promo-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+.shop-promo-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 14px;
+  padding: clamp(28px, 5vw, 64px);
+}
+.shop-promo-copy h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(28px, 3.6vw, 46px);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.shop-promo-copy p {
+  max-width: 380px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--fg-dim);
+}
+
+/* Newsletter (shop copy; reuses .news-form / .news-note) */
+.shop-news {
+  padding: 80px 0 0;
+  text-align: center;
+}
+.shop-news h3 {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(24px, 3.4vw, 40px);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.shop-news p {
+  margin: 0 0 26px;
+  font-size: 14.5px;
+  color: var(--fg-dim);
+}
+.shop-news .news-form {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Filters panel is mobile-collapsible */
+.filters-top {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .shop-filter-btn {
+    display: inline-flex;
+  }
+  .shop-filters {
+    display: none;
+  }
+  .shop-filters.open {
+    display: block;
+  }
+  .filters-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 2px 10px;
+    border-bottom: 1px solid rgba(245, 242, 234, 0.08);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .filters-done {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--riot);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg);
+  }
+  .shop-promo {
+    grid-template-columns: 1fr;
+    margin-top: 56px;
+  }
+  .shop-promo-img {
+    min-height: 220px;
+  }
+  .shop-news {
+    padding-top: 56px;
+  }
 }
 
 /* ---------- Newsletter ---------- */

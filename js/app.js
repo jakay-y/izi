@@ -1137,8 +1137,9 @@ function closeAccount() {
 /* ---------- newsletter ---------- */
 function submitNewsletter(e) {
   e.preventDefault();
-  const input = document.getElementById("newsEmail");
-  const note = document.getElementById("newsNote");
+  const form = e.target;
+  const input = form.querySelector('input[type="email"]');
+  const note = form.parentElement.querySelector(".news-note");
   const email = (input.value || "").trim().toLowerCase();
   if (!email || !email.includes("@")) {
     showToast("Enter a valid email.", true);
@@ -1157,14 +1158,20 @@ function submitNewsletter(e) {
 /* ---------- boot: logo loader → onboarding film → site ---------- */
 const BOOT_MIN_LOGO_MS = 2000; // the logo always gets its moment
 const BOOT_MAX_WAIT_MS = 5000; // ...but a slow connection never traps anyone behind it
-// Wide screens show the vertical film as a column with an ambient glow (see styles.css)
-const INTRO_WIDE_QUERY = "(min-aspect-ratio: 4/5) and (min-height: 520px)";
+/* Which cut each screen gets (vertical for portrait, a widescreen reframe for landscape)
+   is decided by the inline `window.IZI_INTRO` script in #view-intro, which also starts
+   the download at parse time — before this file, and Paystack's script ahead of it, load. */
 
-function introFilmAllowed() {
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const conn = navigator.connection || {};
-  const constrained = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || "");
-  return !reduceMotion && !constrained;
+/* Rotating a phone/tablet while the intro is up: swap to the matching cut */
+function onIntroOrientationChange() {
+  const intro = document.getElementById("view-intro");
+  const film = document.getElementById("introVideo");
+  if (!intro || !film || intro.classList.contains("leaving") || intro.classList.contains("hidden")) return;
+  if (film.dataset.kind === IZI_INTRO.kind()) return;
+  const hadVideo = !!film.getAttribute("src");
+  const wasPlaying = intro.dataset.film === "on";
+  IZI_INTRO.set(film, hadVideo);
+  if (hadVideo && wasPlaying) film.play().catch(() => {});
 }
 
 /* Starts the film muted behind the loader so the browser buffers it (iOS ignores
@@ -1210,34 +1217,6 @@ function warmUpIntroFilm(film, maxMs) {
   });
 }
 
-/* Wide screens only: a tiny blurred copy of the film fills the sides. Skipped on
-   low-core devices, which keep the static blurred poster instead of a live blur. */
-function syncIntroAmbient() {
-  const intro = document.getElementById("view-intro");
-  const film = document.getElementById("introVideo");
-  const ambient = document.getElementById("introAmbient");
-  if (!intro || !film || !ambient || intro.classList.contains("hidden")) return;
-
-  const wide = window.matchMedia(INTRO_WIDE_QUERY).matches;
-  const capable = (navigator.hardwareConcurrency || 4) >= 4;
-  if (!wide || !capable || intro.dataset.film !== "on") {
-    ambient.pause();
-    intro.classList.remove("ambient-on");
-    return;
-  }
-  if (!ambient.getAttribute("src")) {
-    ambient.src = "assets/video/izi-onboarding-ambient.mp4";
-  }
-  ambient.muted = true;
-  ambient.addEventListener(
-    "playing",
-    () => intro.classList.add("ambient-on"),
-    { once: true }
-  );
-  ambient.currentTime = film.currentTime || 0; // stay in step with the main film
-  ambient.play().catch(() => {});
-}
-
 function beginIntroFilm() {
   const intro = document.getElementById("view-intro");
   const film = document.getElementById("introVideo");
@@ -1245,8 +1224,6 @@ function beginIntroFilm() {
   if (!intro || !film || intro.classList.contains("leaving") || intro.classList.contains("hidden")) return;
   intro.dataset.film = "on";
   film.play().catch(() => {}); // refused => the poster (its exact first frame) stays up
-  syncIntroAmbient();
-  window.matchMedia(INTRO_WIDE_QUERY).addEventListener("change", syncIntroAmbient);
 }
 
 function revealIntro(filmState) {
@@ -1285,17 +1262,46 @@ function unloadVideo(video) {
   video.load();
 }
 
+/* Resolves once the logo is genuinely in front of the visitor: the tab is visible (a link
+   opened in a background tab used to burn the whole hold unseen, landing them straight on
+   the video) and the logo image has loaded + decoded (on a slow first load the hold used
+   to start before the logo had painted). The 2.5s cap means a broken image never traps. */
+function logoOnScreen(loader) {
+  const visible = document.hidden
+    ? new Promise((resolve) => {
+        const onShow = () => {
+          if (document.hidden) return;
+          document.removeEventListener("visibilitychange", onShow);
+          resolve();
+        };
+        document.addEventListener("visibilitychange", onShow);
+      })
+    : Promise.resolve();
+  const img = loader.querySelector(".loader-logo");
+  const painted =
+    img && img.decode
+      ? Promise.race([img.decode().catch(() => {}), new Promise((r) => setTimeout(r, 2500))])
+      : Promise.resolve();
+  return Promise.all([visible, painted]);
+}
+
 function runBootSequence() {
   const loader = document.getElementById("view-loader");
   if (!loader) return;
   const film = document.getElementById("introVideo");
 
-  const filmOk = film && introFilmAllowed();
-  // Reduced-motion / Data Saver / 2G visitors get the poster only — don't spend their
-  // bandwidth on a 2.8MB film they will never see.
-  if (film && !filmOk) unloadVideo(film);
+  // The inline script already set the poster and, unless reduced-motion / Data Saver / 2G,
+  // the film's src — so a film exists only when it is wanted and no bytes are wasted.
+  if (film && !film.dataset.kind) IZI_INTRO.set(film, IZI_INTRO.allowed()); // safety net
+  const filmOk = !!(film && film.getAttribute("src"));
+  if (film) {
+    window.matchMedia(IZI_INTRO.query).addEventListener("change", onIntroOrientationChange);
+  }
 
-  const logoHold = new Promise((resolve) => setTimeout(resolve, BOOT_MIN_LOGO_MS));
+  // The logo's moment starts only once it is actually on screen, not at page load
+  const logoHold = logoOnScreen(loader).then(
+    () => new Promise((resolve) => setTimeout(resolve, BOOT_MIN_LOGO_MS))
+  );
   const filmReady = filmOk
     ? warmUpIntroFilm(film, BOOT_MAX_WAIT_MS)
     : Promise.resolve("off");
@@ -1316,24 +1322,17 @@ document.addEventListener("visibilitychange", () => {
   const intro = document.getElementById("view-intro");
   if (!intro || intro.classList.contains("hidden") || intro.dataset.film !== "on") return;
   const film = document.getElementById("introVideo");
-  if (document.hidden) {
-    film.pause();
-    document.getElementById("introAmbient").pause();
-  } else {
-    film.play().catch(() => {});
-    syncIntroAmbient();
-  }
+  if (document.hidden) film.pause();
+  else film.play().catch(() => {});
 });
 
-/* Free the decoders and buffers once the film is no longer on screen */
+/* Free the decoder and buffers once the film is no longer on screen */
 function releaseIntroFilm() {
-  window.matchMedia(INTRO_WIDE_QUERY).removeEventListener("change", syncIntroAmbient);
-  ["introVideo", "introAmbient"].forEach((id) => {
-    const video = document.getElementById(id);
-    if (!video) return;
-    video.removeAttribute("poster");
-    unloadVideo(video);
-  });
+  window.matchMedia(IZI_INTRO.query).removeEventListener("change", onIntroOrientationChange);
+  const film = document.getElementById("introVideo");
+  if (!film) return;
+  film.removeAttribute("poster");
+  unloadVideo(film);
 }
 
 /* ---------- intro ---------- */
@@ -1746,14 +1745,21 @@ function goShop(category, subcategory) {
   closeAccount();
   shopFilters.category = category && category !== "All" ? category : null;
   shopFilters.subcategory = subcategory || null;
-  document.getElementById("shopTitle").textContent =
-    subcategory || shopFilters.category || "All Products";
+  shopFilters.sizes = [];
+  shopFilters.page = 1;
+  initShopUI();
+  toggleShopFilters(false);
+  updateShopHeading();
   window.scrollTo(0, 0);
   initPriceFilterBounds();
   renderShopGrid();
 }
 
 /* ---------- shop filters ---------- */
+const SHOP_PAGE_SIZE = 9;
+const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "OS", "Free Size"];
+const CATEGORY_ORDER = ["Tops", "Bottoms", "Headwear", "Accessories"];
+
 let shopFilters = {
   inStockOnly: false,
   minPrice: 0,
@@ -1761,6 +1767,8 @@ let shopFilters = {
   sort: "date-new",
   category: null,
   subcategory: null,
+  sizes: [],
+  page: 1,
 };
 let maxCatalogPrice = 100000;
 
@@ -1791,6 +1799,12 @@ function updatePriceFill() {
   fill.style.width = Math.max(0, pctMax - pctMin) + "%";
 }
 
+/* Any filter change goes back to page 1 */
+function shopChanged() {
+  shopFilters.page = 1;
+  renderShopGrid();
+}
+
 function onPriceRangeInput() {
   let minV = parseFloat(document.getElementById("priceMinRange").value);
   let maxV = parseFloat(document.getElementById("priceMaxRange").value);
@@ -1804,7 +1818,7 @@ function onPriceRangeInput() {
   shopFilters.minPrice = minV;
   shopFilters.maxPrice = maxV;
   updatePriceFill();
-  renderShopGrid();
+  shopChanged();
 }
 
 function onPriceNumInput() {
@@ -1815,38 +1829,273 @@ function onPriceNumInput() {
   shopFilters.minPrice = minV;
   shopFilters.maxPrice = maxV;
   updatePriceFill();
-  renderShopGrid();
+  shopChanged();
+}
+
+function setStockFilterUI(on) {
+  const btn = document.getElementById("stockToggle");
+  btn.classList.toggle("on", on);
+  btn.setAttribute("aria-checked", String(on));
 }
 
 function toggleStockFilter() {
-  const btn = document.getElementById("stockToggle");
-  const on = !btn.classList.contains("on");
-  btn.classList.toggle("on", on);
-  btn.setAttribute("aria-checked", String(on));
+  const on = !document.getElementById("stockToggle").classList.contains("on");
+  setStockFilterUI(on);
   shopFilters.inStockOnly = on;
-  renderShopGrid();
+  shopChanged();
 }
 
 function onSortChange() {
   shopFilters.sort = document.getElementById("sortSelect").value;
-  renderShopGrid();
+  shopChanged();
 }
 
 function toggleFilterGroup(btn) {
   btn.closest(".filter-group").classList.toggle("collapsed");
 }
 
+/* Mobile: filters live behind a button instead of a long always-open panel */
+function toggleShopFilters(force) {
+  const panel = document.getElementById("shopFilters");
+  const btn = document.getElementById("shopFilterBtn");
+  if (!panel || !btn) return;
+  const open = typeof force === "boolean" ? force : !panel.classList.contains("open");
+  panel.classList.toggle("open", open);
+  btn.setAttribute("aria-expanded", String(open));
+}
+
+function sizesOf(p) {
+  return Array.isArray(p.sizes) && p.sizes.length ? p.sizes : SIZES;
+}
+
+function shopPriceActive() {
+  return (
+    shopFilters.maxPrice != null &&
+    (shopFilters.minPrice > 0 || shopFilters.maxPrice < maxCatalogPrice)
+  );
+}
+
+/* Does a product pass every active filter? `skip` leaves one facet out, so that facet's
+   own counts show what you would get by changing it (category tree, size chips). */
+function passesShopFilters(p, skip) {
+  if (!p.visible) return false;
+  if (skip !== "stock" && shopFilters.inStockOnly && p.inStock === false) return false;
+  if (
+    skip !== "price" &&
+    shopFilters.maxPrice != null &&
+    (p.price < shopFilters.minPrice || p.price > shopFilters.maxPrice)
+  )
+    return false;
+  if (skip !== "category") {
+    if (shopFilters.category && p.category !== shopFilters.category) return false;
+    if (shopFilters.subcategory && p.subcategory !== shopFilters.subcategory) return false;
+  }
+  if (skip !== "size" && shopFilters.sizes.length) {
+    const have = sizesOf(p);
+    if (!shopFilters.sizes.some((s) => have.includes(s))) return false;
+  }
+  return true;
+}
+
+function compactNGN(n) {
+  return "₦" + Math.round(Number(n) || 0).toLocaleString("en-US");
+}
+
+function updateShopHeading() {
+  const { category, subcategory } = shopFilters;
+  document.getElementById("shopTitle").textContent = subcategory || category || "All Products";
+  const tail = document.getElementById("crumbTail");
+  let html = "";
+  if (category) {
+    html +=
+      `<span aria-hidden="true">›</span> ` +
+      (subcategory
+        ? `<button type="button" class="crumb-btn" data-cat="${escapeHtml(category)}">${escapeHtml(category)}</button> <span aria-hidden="true">›</span> <span aria-current="page">${escapeHtml(subcategory)}</span>`
+        : `<span aria-current="page">${escapeHtml(category)}</span>`);
+  }
+  tail.innerHTML = html;
+}
+
+function setShopCategory(cat, sub) {
+  shopFilters.category = cat || null;
+  shopFilters.subcategory = cat && sub ? sub : null;
+  updateShopHeading();
+  shopChanged();
+}
+
+function toggleShopSize(size) {
+  const i = shopFilters.sizes.indexOf(size);
+  if (i >= 0) shopFilters.sizes.splice(i, 1);
+  else shopFilters.sizes.push(size);
+  shopChanged();
+}
+
+function removeShopFilter(kind, value) {
+  if (kind === "category") {
+    shopFilters.category = null;
+    shopFilters.subcategory = null;
+  } else if (kind === "subcategory") {
+    shopFilters.subcategory = null;
+  } else if (kind === "size") {
+    shopFilters.sizes = shopFilters.sizes.filter((s) => s !== value);
+  } else if (kind === "price") {
+    initPriceFilterBounds();
+  } else if (kind === "stock") {
+    shopFilters.inStockOnly = false;
+    setStockFilterUI(false);
+  } else if (kind === "all") {
+    shopFilters.category = null;
+    shopFilters.subcategory = null;
+    shopFilters.sizes = [];
+    shopFilters.inStockOnly = false;
+    setStockFilterUI(false);
+    initPriceFilterBounds();
+  }
+  updateShopHeading();
+  shopChanged();
+}
+
+function goToShopPage(n) {
+  shopFilters.page = n;
+  renderShopGrid();
+  const top = document.querySelector(".shop-main");
+  if (top)
+    window.scrollTo({
+      top: top.getBoundingClientRect().top + window.scrollY - 96,
+      behavior: "smooth",
+    });
+}
+
+/* One set of delegated listeners, attached the first time the shop opens */
+let shopUiReady = false;
+function initShopUI() {
+  if (shopUiReady) return;
+  shopUiReady = true;
+  const on = (id, sel, fn) =>
+    document.getElementById(id).addEventListener("click", (e) => {
+      const el = e.target.closest(sel);
+      if (el && !el.disabled) fn(el);
+    });
+  on("categoryTree", ".cat-row", (b) => setShopCategory(b.dataset.cat, b.dataset.sub));
+  on("sizeChips", ".size-chip", (b) => toggleShopSize(b.dataset.size));
+  on("activeFilters", "[data-kind]", (b) => removeShopFilter(b.dataset.kind, b.dataset.value));
+  on("shopPager", "[data-page]", (b) => goToShopPage(parseInt(b.dataset.page, 10)));
+  on("crumbTail", "[data-cat]", (b) => setShopCategory(b.dataset.cat, null));
+}
+
+function renderCategoryTree() {
+  const pool = catalog.filter((p) => passesShopFilters(p, "category"));
+  const visible = catalog.filter((p) => p.visible);
+  const names = [...new Set(visible.map((p) => p.category).filter(Boolean))].sort((a, b) => {
+    const ia = CATEGORY_ORDER.indexOf(a);
+    const ib = CATEGORY_ORDER.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  });
+  const row = (label, count, cat, sub, active, depth) =>
+    `<button type="button" class="cat-row${depth ? " sub" : ""}${active ? " active" : ""}" data-cat="${escapeHtml(cat || "")}" data-sub="${escapeHtml(sub || "")}" aria-pressed="${active}"${count === 0 && !active ? " disabled" : ""}><span>${escapeHtml(label)}</span><span class="cat-count">${count}</span></button>`;
+
+  let html = row("All products", pool.length, "", "", !shopFilters.category, 0);
+  names.forEach((cat) => {
+    const inCat = pool.filter((p) => p.category === cat);
+    html += row(cat, inCat.length, cat, "", shopFilters.category === cat && !shopFilters.subcategory, 0);
+    if (shopFilters.category === cat) {
+      const subs = [
+        ...new Set(visible.filter((p) => p.category === cat).map((p) => p.subcategory).filter(Boolean)),
+      ];
+      subs.forEach((sub) => {
+        const n = inCat.filter((p) => p.subcategory === sub).length;
+        html += row(sub, n, cat, sub, shopFilters.subcategory === sub, 1);
+      });
+    }
+  });
+  document.getElementById("categoryTree").innerHTML = html;
+}
+
+function renderSizeChips() {
+  const pool = catalog.filter((p) => passesShopFilters(p, "size"));
+  const all = new Set();
+  catalog.filter((p) => p.visible).forEach((p) => sizesOf(p).forEach((s) => all.add(s)));
+  const sizes = [...all].sort((a, b) => {
+    const ia = SIZE_ORDER.indexOf(a);
+    const ib = SIZE_ORDER.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  });
+  document.getElementById("sizeChips").innerHTML = sizes
+    .map((s) => {
+      const on = shopFilters.sizes.includes(s);
+      const n = pool.filter((p) => sizesOf(p).includes(s)).length;
+      return `<button type="button" class="size-chip${on ? " on" : ""}" data-size="${escapeHtml(s)}" aria-pressed="${on}"${n === 0 && !on ? " disabled" : ""}>${escapeHtml(s)}<em>${n}</em></button>`;
+    })
+    .join("");
+}
+
+/* Returns how many filters are active (also drives the mobile Filters badge) */
+function renderActiveFilters() {
+  const chips = [];
+  if (shopFilters.category) chips.push({ kind: "category", label: shopFilters.category });
+  if (shopFilters.subcategory) chips.push({ kind: "subcategory", label: shopFilters.subcategory });
+  shopFilters.sizes.forEach((s) => chips.push({ kind: "size", value: s, label: "Size " + s }));
+  if (shopPriceActive())
+    chips.push({
+      kind: "price",
+      label: compactNGN(shopFilters.minPrice) + " – " + compactNGN(shopFilters.maxPrice),
+    });
+  if (shopFilters.inStockOnly) chips.push({ kind: "stock", label: "In stock" });
+
+  const wrap = document.getElementById("activeFilters");
+  wrap.hidden = chips.length === 0;
+  wrap.innerHTML = chips.length
+    ? chips
+        .map(
+          (c) =>
+            `<button type="button" class="f-chip" data-kind="${c.kind}" data-value="${escapeHtml(c.value || "")}" aria-label="Remove filter: ${escapeHtml(c.label)}">${escapeHtml(c.label)}<span aria-hidden="true">✕</span></button>`
+        )
+        .join("") + `<button type="button" class="f-clear" data-kind="all">Clear all</button>`
+    : "";
+
+  const badge = document.getElementById("filterBadge");
+  badge.hidden = chips.length === 0;
+  badge.textContent = chips.length;
+  return chips.length;
+}
+
+function pageWindow(cur, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const set = new Set([1, total, cur - 1, cur, cur + 1]);
+  const pages = [...set].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+  const out = [];
+  pages.forEach((n, i) => {
+    if (i && n - pages[i - 1] > 1) out.push("…");
+    out.push(n);
+  });
+  return out;
+}
+
+function renderPager(totalPages) {
+  const nav = document.getElementById("shopPager");
+  if (totalPages <= 1) {
+    nav.hidden = true;
+    nav.innerHTML = "";
+    return;
+  }
+  const cur = shopFilters.page;
+  const btn = (label, page, extra, disabled, aria) =>
+    `<button type="button" class="pg${extra || ""}" data-page="${page}"${disabled ? " disabled" : ""}${aria || ""}>${label}</button>`;
+  nav.innerHTML =
+    btn("Previous", cur - 1, " pg-nav", cur === 1) +
+    pageWindow(cur, totalPages)
+      .map((n) =>
+        n === "…"
+          ? `<span class="pg-gap" aria-hidden="true">…</span>`
+          : btn(n, n, n === cur ? " on" : "", false, ` aria-label="Page ${n}"${n === cur ? ' aria-current="page"' : ""}`)
+      )
+      .join("") +
+    btn("Next", cur + 1, " pg-nav", cur === totalPages);
+  nav.hidden = false;
+}
+
 function renderShopGrid() {
-  let items = catalog.filter((p) => p.visible);
-  if (shopFilters.inStockOnly) items = items.filter((p) => p.inStock !== false);
-  if (shopFilters.maxPrice != null)
-    items = items.filter(
-      (p) => p.price >= shopFilters.minPrice && p.price <= shopFilters.maxPrice
-    );
-  if (shopFilters.category)
-    items = items.filter((p) => p.category === shopFilters.category);
-  if (shopFilters.subcategory)
-    items = items.filter((p) => p.subcategory === shopFilters.subcategory);
+  let items = catalog.filter((p) => passesShopFilters(p));
 
   switch (shopFilters.sort) {
     case "price-asc":
@@ -1862,20 +2111,30 @@ function renderShopGrid() {
       items = items.slice().reverse();
   }
 
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE));
+  shopFilters.page = Math.min(Math.max(1, shopFilters.page), totalPages);
+  const start = (shopFilters.page - 1) * SHOP_PAGE_SIZE;
+  const pageItems = items.slice(start, start + SHOP_PAGE_SIZE);
+
   const grid = document.getElementById("shopGrid");
-  let cardsHtml = items
+  let cardsHtml = pageItems
     .map((p) => {
       const src = productImageSrc(p.image);
       const media = src
         ? `<img src="${src}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async">`
         : `<span class="ph-label">Coming Soon</span>`;
+      const onSale = p.compareAt && p.compareAt > p.price;
+      const badges =
+        (onSale ? `<span class="badge sale">Sale</span>` : "") +
+        (p.tag ? `<span class="badge">${escapeHtml(p.tag)}</span>` : "");
       return `
     <article class="shop-card" data-product="${escapeHtml(p.id)}" onclick="openModal('${p.id}')"
          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${p.id}');}"
          role="button" tabindex="0" aria-label="View ${escapeHtml(p.name)}">
       <div class="sc-img${src ? "" : " ph"}">
         ${media}
-        ${p.tag ? `<span class="badge">${escapeHtml(p.tag)}</span>` : ""}
+        ${badges ? `<div class="sc-badges">${badges}</div>` : ""}
       </div>
       <div class="sc-meta">
         <div class="sc-name">${escapeHtml(p.name)}</div>
@@ -1891,19 +2150,32 @@ function renderShopGrid() {
     })
     .join("");
 
-  if (!items.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">No pieces match these filters yet — try widening your search, or check back soon.</div>`;
+  const filterCount = renderActiveFilters();
+  renderCategoryTree();
+  renderSizeChips();
+  renderPager(totalPages);
+
+  if (!total) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">No pieces match these filters yet — try widening your search, or check back soon.${
+      filterCount
+        ? ` <button type="button" class="btn-ghost" onclick="removeShopFilter('all')">Clear filters</button>`
+        : ""
+    }</div>`;
   } else {
-    if (!shopFilters.category && items.length < 6) {
-      const placeholders = 6 - items.length;
-      for (let i = 0; i < placeholders; i++) {
+    if (!filterCount && total < 6) {
+      for (let i = 0; i < 6 - total; i++) {
         cardsHtml += `<div class="shop-card"><div class="sc-img ph"><span class="ph-label">Coming Soon</span></div><div class="sc-name" style="color:var(--fg-dim);">New Drop</div></div>`;
       }
     }
     grid.innerHTML = cardsHtml;
   }
-  document.getElementById("shopCount").textContent =
-    items.length + (items.length === 1 ? " Product" : " Products");
+
+  const all = catalog.filter((p) => p.visible).length;
+  document.getElementById("shopCount").innerHTML = total
+    ? `Showing <b>${start + 1}–${start + pageItems.length}</b> of <b>${total}</b> ${total === 1 ? "product" : "products"}${
+        total < all ? ` <span class="dim">· ${all} in total</span>` : ""
+      }`
+    : "0 products";
 }
 
 /* ---------- FAQ ---------- */
