@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v17";
+const STORAGE_KEY = "izi-catalog-v19";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -55,24 +55,6 @@ const SEED_PRODUCTS = [
     description:
       "A bold iZi statement piece featuring the FVCK LOVE / LIFE AIN'T iZi graphic. Clean, rebellious streetwear built around the iZi attitude.",
     image: "merch/FVCK LOVE Black Tee.png",
-  },
-  {
-    id: "p3",
-    name: "Go Izi Baby Tee — White",
-    price: 20000,
-    compareAt: null,
-    category: "Tops",
-    subcategory: "Tees",
-    tag: "",
-    size: "normal",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    shade: null,
-    visible: true,
-    inStock: true,
-    colors: 1,
-    description:
-      "The signature lip graphic that started it all. Fitted cut, soft-hand print, comes in white and pink.",
-    image: "assets/product-go-izi-baby-merch.png",
   },
   {
     id: "p4",
@@ -362,6 +344,115 @@ const SEED_PRODUCTS = [
       "Clean white WE THE FRIENDZ tee featuring the signature WE THE FRIENDZ / MAMA WARNED YOU ABOUT graphic.",
     image: "merch/WE THE FRIENDZ Tee White.png",
   },
+  {
+    id: "p20",
+    accent: "#8a1226", // stage colour in the product viewer (the red flag)
+    name: "Red iZi Flag Sleeveless — NOT YOUR TYPE 🚩",
+    price: 35000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The Red iZi Flag Sleeveless features the bold “NOT YOUR TYPE” graphic, paired with a red flag carrying the white iZi logo at its centre. The design plays with the symbolism of the red flag, turning a familiar sign into a statement of attitude and individuality. It’s expressive, unapologetic and made for those who aren’t interested in fitting everybody’s expectations.",
+    image: "merch/Red iZi Flag Sleeveless.png",
+  },
+  {
+    id: "p21",
+    name: "iZiLifestyle Hoodie & Sweatpant Combo",
+    price: 70000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Sets",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The iZiLifestyle Hoodie & Sweatpant Combo brings together everyday comfort and unapologetic streetwear aesthetics. Featuring a black hoodie and matching sweatpants, both detailed with the signature white iZi graphic, this coordinated set delivers a clean, unified look without doing too much.",
+    image: "merch/iZiLifestyle Hoodie Sweatpant Combo.png",
+  },
+  {
+    id: "p22",
+    name: "iZiLifestyle Hoodie",
+    price: 50000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Hoodies",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The iZiLifestyle Hoodie brings together a classic black base and a distinctive white sleeve graphic for a statement that doesn’t need excessive detailing. Its clean front keeps the overall look minimal, while the graphic along the sleeve introduces movement and visual character. It’s a versatile streetwear piece that can stand on its own or become part of a coordinated iZi set.",
+    image: "merch/iZiLifestyle Hoodie.png",
+  },
+  {
+    id: "p23",
+    name: "iZiLifestyle Sweatpant",
+    price: 30000,
+    compareAt: null,
+    category: "Bottoms",
+    subcategory: "Sweatpants",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The iZiLifestyle Sweatpant brings a clean streetwear aesthetic to your everyday rotation. Its black base keeps the look versatile, while the white iZi graphic adds a distinctive finish that ties the piece into the brand’s visual identity.",
+    image: "merch/iZiLifestyle Sweatpant.png",
+  },
+  {
+    id: "p24",
+    name: "iZiLifestyle Three-Quarter",
+    price: 30000,
+    compareAt: null,
+    category: "Bottoms",
+    subcategory: "Three-Quarters",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The iZiLifestyle Three-Quarter brings the signature iZi graphic into a different form. Featuring the same distinctive white graphic as the iZiLifestyle Sweatpant against a black base, this piece keeps the collection visually connected while offering a different way to wear the iZi identity.",
+    image: "merch/iZiLifestyle Three-Quarter.png",
+  },
+  {
+    id: "p25",
+    name: "iZi “Zibra” Beanie",
+    price: 15000,
+    compareAt: null,
+    category: "Headwear",
+    subcategory: "Beanies",
+    tag: "New",
+    size: "normal",
+    sizes: ["OS"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "Introducing the iZi “Zibra”, a distinctive beanie built around the contrast of black and white, the very colours that form the foundation of iZi. Its distressed zebra-inspired pattern embraces irregularity, making imperfection part of the design rather than something to hide. With no loud logo or unnecessary additions, the piece allows its pattern and silhouette to speak for themselves. Inspired by individuality and the creative vision behind iZi, the Zibra is designed for those who understand that personal style doesn’t always need to announce itself.",
+    image: "merch/iZi Zibra Beanie.jpg",
+  },
 ];
 
 /* ---------- utils ---------- */
@@ -526,74 +617,7 @@ function renderBento() {
 }
 
 /* ---------- product modal ---------- */
-function openModal(id) {
-  const p = catalog.find((x) => x.id === id);
-  if (!p) return;
-  modalProduct = p;
-  const availableSizes =
-    Array.isArray(p.sizes) && p.sizes.length ? p.sizes : SIZES.slice();
-  modalSize = availableSizes[0];
-  modalQty = 1;
-
-  const mImg = document.getElementById("mImg");
-  const src = productImageSrc(p.image);
-  if (src) {
-    mImg.src = src;
-    mImg.style.display = "";
-  } else {
-    mImg.removeAttribute("src");
-    mImg.style.display = "none";
-  }
-  mImg.alt = p.name;
-  // Flat product shots (front+back shirt) — zoom out in modal
-  const mImgWrap = document.querySelector("#modalOverlay .m-img");
-  if (mImgWrap) {
-    mImgWrap.classList.toggle(
-      "flat-product",
-      p.id === "p1" || /izi shirt/i.test(p.image || "")
-    );
-  }
-  document.getElementById("mCat").textContent =
-    p.category +
-    (p.subcategory ? " · " + p.subcategory : "") +
-    (p.shade ? " · " + p.shade : "");
-  document.getElementById("mName").textContent = p.name;
-  document.getElementById("mPrice").innerHTML =
-    priceLine(p) +
-    (p.shade
-      ? ` <span style="color:var(--fg-dim); font-size:12px;">— ${escapeHtml(p.shade)}</span>`
-      : "") +
-    (p.inStock === false
-      ? ` <span style="color:var(--riot-2); font-size:12px;">— Out of stock</span>`
-      : "");
-  document.getElementById("mDesc").textContent = p.description || "";
-  document.getElementById("mQty").textContent = "1";
-
-  const sizes = document.getElementById("mSizes");
-  sizes.innerHTML = availableSizes
-    .map(
-      (s) =>
-        `<button type="button" class="${s === modalSize ? "active" : ""}" onclick="selectModalSize('${String(s).replace(/'/g, "\\'")}')">${escapeHtml(s)}</button>`
-    )
-    .join("");
-
-  const addBtn = document.getElementById("mAddBtn");
-  if (p.inStock === false || p.comingSoon) {
-    addBtn.disabled = true;
-    addBtn.textContent = p.comingSoon ? "Coming Soon" : "Out of Stock";
-  } else {
-    addBtn.disabled = false;
-    addBtn.textContent = "Add to Bag →";
-  }
-
-  document.getElementById("modalOverlay").classList.add("open");
-  document.getElementById("mClose").focus();
-}
-
-function closeModal() {
-  document.getElementById("modalOverlay").classList.remove("open");
-  modalProduct = null;
-}
+/* openModal() and closeModal() live in js/product-viewer.js (full-screen showcase). */
 
 function selectModalSize(s) {
   modalSize = s;

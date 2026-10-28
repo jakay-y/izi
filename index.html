@@ -628,32 +628,63 @@
     </div>
   </div>
 
-  <!-- ================= QUICK VIEW ================= -->
-  <div id="modalOverlay" onclick="if(event.target===this)closeModal();">
-    <div class="modal-card">
-      <div class="m-img">
-        <button class="m-close" id="mClose" onclick="closeModal()" aria-label="Close">✕</button>
-        <img id="mImg" src="" alt="">
-      </div>
-      <div class="m-body">
-        <div class="m-cat" id="mCat"></div>
-        <div class="m-name" id="mName"></div>
-        <div class="m-price" id="mPrice"></div>
-        <div class="m-desc" id="mDesc"></div>
-        <div class="size-row">
-          <label>Size</label>
-          <div class="size-opts" id="mSizes"></div>
-        </div>
-        <div class="qty-row">
-          <label>Qty</label>
-          <div class="qty-control">
-            <button type="button" onclick="changeModalQty(-1)" aria-label="Decrease quantity">−</button>
-            <span id="mQty">1</span>
-            <button type="button" onclick="changeModalQty(1)" aria-label="Increase quantity">+</button>
+  <!-- ================= PRODUCT SHOWCASE ================= -->
+  <div id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="mName" aria-hidden="true">
+    <button type="button" class="pv-close" id="mClose" onclick="closeModal()" aria-label="Close product">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+
+    <div class="pv-scroll">
+      <div class="pv-grid">
+        <div class="pv-col-left">
+          <div class="pv-head">
+            <div class="m-cat" id="mCat"></div>
+            <h2 class="m-name" id="mName"></h2>
+          </div>
+          <div class="pv-desc">
+            <p class="m-desc" id="mDesc"></p>
           </div>
         </div>
-        <div class="m-actions">
-          <button type="button" class="btn-primary" id="mAddBtn" onclick="addModalToBag()">Add to Bag →</button>
+
+        <div class="pv-stage" id="pvStage">
+          <div class="pv-floor" aria-hidden="true"></div>
+          <div class="pv-figure" id="pvFigure">
+            <img id="mImg" src="" alt="" decoding="async">
+          </div>
+          <button type="button" class="pv-peek" id="pvPeek" onclick="pvStep(1)" aria-label="Next product">
+            <img id="pvPeekImg" src="" alt="" decoding="async">
+          </button>
+          <div class="pv-pager" id="pvPager">
+            <button type="button" onclick="pvStep(-1)" aria-label="Previous product">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <span id="pvCount" aria-live="polite">01 / 01</span>
+            <button type="button" onclick="pvStep(1)" aria-label="Next product">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="pv-col-right">
+          <div class="pv-buy">
+            <div class="m-price" id="mPrice"></div>
+            <p class="pv-note" id="pvNote" hidden>Out of stock</p>
+            <div class="size-row">
+              <label>Choose your size</label>
+              <div class="size-opts" id="mSizes"></div>
+            </div>
+            <div class="qty-row">
+              <label>Quantity</label>
+              <div class="qty-control">
+                <button type="button" onclick="changeModalQty(-1)" aria-label="Decrease quantity">−</button>
+                <span id="mQty">1</span>
+                <button type="button" onclick="changeModalQty(1)" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="pv-cta">
+            <button type="button" class="btn-primary" id="mAddBtn" onclick="addModalToBag()">Add to Bag →</button>
+          </div>
         </div>
       </div>
     </div>
@@ -877,6 +908,7 @@
   <script src="js/env.js"></script>
   <script src="https://js.paystack.co/v1/inline.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/product-viewer.js"></script>
   <script src="js/paystack.js"></script>
 </body>
 </html>
