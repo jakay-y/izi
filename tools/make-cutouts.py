@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""
+Cuts every catalog product out of its solid black background and works out
+whether it reads best on a white, black or grey stage in the product viewer.
+
+Run from the project root whenever products are added or their images change:
+
+    python tools/make-cutouts.py
+
+Reads   js/app.js            the `image: "merch/....png"` lines of SEED_PRODUCTS
+Writes  merch/cutouts/*.webp transparent product (the originals are never touched)
+        js/cutouts.js        lookup the viewer loads: image -> cutout + stage
+
+How the cut works: each render is a garment on pure black with a soft white glow
+(~15px) around it. We find the black background (connected to the border), measure
+how wide the glow is for this image, and remove exactly that much from the edge.
+Black garments survive because the glow ring around them blocks the background
+from leaking inside.
+
+Needs: pillow, numpy, scipy.
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+from scipy import ndimage as ndi
+
+ROOT = Path(__file__).resolve().parent.parent
+APP_JS = ROOT / "js" / "app.js"
+OUT_DIR = ROOT / "merch" / "cutouts"
+MANIFEST = ROOT / "js" / "cutouts.js"
+
+BG_THRESHOLD = 3  # "pure black" (the background is exactly 0)
+FALLBACK_GLOW = 14  # px, used if the glow width can't be measured
+
+# Stage colours, as perceived brightness 0..1, used to pick the best backdrop.
+STAGE_LUMA = {"white": 0.96, "black": 0.03, "grey": 0.36}
+
+
+def catalog_images():
+    """Product images listed in app.js that are renders (png) under merch/."""
+    text = APP_JS.read_text(encoding="utf-8")
+    seen, out = set(), []
+    for m in re.finditer(r'image:\s*"(merch/[^"]+\.png)"', text):
+        rel = m.group(1)
+        if rel not in seen:
+            seen.add(rel)
+            out.append(rel)
+    return out
+
+
+def glow_radius(dist, peak):
+    """Distance (px) from the background to the garment edge.
+
+    Brightness climbs steadily through the glow, then either drops (dark garment)
+    or jumps (bright garment) at the garment edge. Find that first break.
+    """
+    prof = []
+    for d in range(1, 46):
+        ring = (dist >= d) & (dist < d + 1)
+        prof.append(float(peak[ring].mean()) if ring.any() else float("nan"))
+    for i in range(2, len(prof) - 4):
+        a, b = prof[i], prof[i + 3]
+        if np.isnan(a) or np.isnan(b) or a < 40:
+            continue
+        if b < a - 8 or b > a + 50:
+            return i + 1
+    return FALLBACK_GLOW
+
+
+def cut(path):
+    rgb = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
+    peak = rgb.max(axis=2)
+
+    # 1. background = near-black pixels connected to the image border
+    labels, _ = ndi.label(peak <= BG_THRESHOLD)
+    border = np.unique(
+        np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]])
+    )
+    bg = np.isin(labels, border[border != 0])
+
+    # 2. strip the glow: alpha ramps in over 2px right after the glow ends
+    dist = ndi.distance_transform_edt(~bg)
+    r = glow_radius(dist, peak)
+    alpha = np.clip((dist - r) / 2.0, 0.0, 1.0)
+    alpha = ndi.gaussian_filter(alpha, 0.7)
+    alpha[bg] = 0.0
+
+    # 3. edge pixels still carry glow colour: copy colour from the nearest solid pixel
+    solid = dist >= r + 2
+    _, idx = ndi.distance_transform_edt(~solid, return_indices=True)
+    clean = rgb[idx[0], idx[1]]
+    rgb = np.where(solid[..., None], rgb, clean)
+
+    return rgb, alpha, r
+
+
+def pick_stage(rgb, alpha):
+    """white / black / grey: whichever the garment colours stand out against most."""
+    core = ndi.binary_erosion(alpha > 0.95, iterations=6)
+    px = rgb[core] / 255.0
+    if len(px) == 0:
+        return "black"
+    luma = 0.2126 * px[:, 0] + 0.7152 * px[:, 1] + 0.0722 * px[:, 2]
+
+    # share of the garment that would blend into each backdrop
+    camo = {n: float(np.mean(np.abs(luma - s) < 0.16)) for n, s in STAGE_LUMA.items()}
+    camo["grey"] += 0.08  # only pick grey when white and black both clearly lose
+    best = min(camo.values())
+    contenders = [n for n, c in camo.items() if c <= best + 0.02 and n != "grey"]
+    if len(contenders) == 2:  # white and black tie: dark garment -> white stage
+        return "black" if float(luma.mean()) >= 0.5 else "white"
+    return min(camo, key=camo.get)
+
+
+def main():
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    manifest = {}
+    for rel in catalog_images():
+        src = ROOT / rel
+        if not src.exists():
+            print("skip (missing):", rel)
+            continue
+        rgb, alpha, r = cut(src)
+        stage = pick_stage(rgb, alpha)
+        out = OUT_DIR / (src.stem + ".webp")
+        rgba = np.dstack([np.clip(rgb, 0, 255), alpha * 255.0]).astype(np.uint8)
+        Image.fromarray(rgba, "RGBA").save(
+            out, "WEBP", quality=88, alpha_quality=95, method=6
+        )
+        manifest[rel] = {"src": f"merch/cutouts/{out.name}", "stage": stage}
+        print(f"{stage:6s} glow={r:2d}px  {rel}")
+
+    MANIFEST.write_text(
+        "/* Generated by tools/make-cutouts.py - do not edit by hand. */\n"
+        "const PV_CUTOUTS = "
+        + json.dumps(manifest, indent=2, ensure_ascii=False)
+        + ";\n",
+        encoding="utf-8",
+    )
+    print(f"\n{len(manifest)} cutouts -> {OUT_DIR.relative_to(ROOT)}, manifest -> {MANIFEST.relative_to(ROOT)}")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

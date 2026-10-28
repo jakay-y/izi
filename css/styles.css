@@ -3311,33 +3311,88 @@ footer {
 }
 
 /* ---------- Product showcase ----------
-   Full-screen viewer. The overlay's own background is the "stage": its colour
-   (--pv-tone) follows the product and eases between products. The product
-   image has a solid black background, so it is blended onto the stage with
-   mix-blend-mode: lighten (black drops away, the product and its glow stay).
-   The blended elements must not sit inside a wrapper that creates its own
-   stacking context (transform, z-index, opacity, filter), or the blend stops
-   working. See js/product-viewer.js. */
-@property --pv-tone {
+   Full-screen viewer. The stage is plain white, black or grey: whichever the
+   garment stands out against most (chosen per product by tools/make-cutouts.py
+   and set as data-stage on the overlay). Products are transparent cutouts, so
+   their real colours show. Colours are registered properties so the stage
+   eases between products instead of snapping. */
+@property --pv-a {
   syntax: "<color>";
   inherits: true;
-  initial-value: #2b2a28;
+  initial-value: #1d1d1c;
+}
+@property --pv-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #050504;
+}
+@property --pv-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f5f2ea;
+}
+@property --pv-body {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(245, 242, 234, 0.86);
+}
+@property --pv-dim {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(245, 242, 234, 0.68);
+}
+@property --pv-line {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(245, 242, 234, 0.26);
+}
+@property --pv-chip {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(10, 10, 9, 0.4);
 }
 
 #modalOverlay {
-  --pv-tone: #2b2a28;
+  /* black stage (default) */
+  --pv-a: #1d1d1c;
+  --pv-b: #050504;
+  --pv-ink: #f5f2ea;
+  --pv-body: rgba(245, 242, 234, 0.86);
+  --pv-dim: rgba(245, 242, 234, 0.68);
+  --pv-line: rgba(245, 242, 234, 0.26);
+  --pv-chip: rgba(10, 10, 9, 0.4);
+  --pv-fx: drop-shadow(0 0 24px rgba(255, 255, 255, 0.2));
+  --pv-floor: rgba(0, 0, 0, 0);
+
   position: fixed;
   inset: 0;
   z-index: 200;
   display: none;
-  background-color: var(--bg);
-  background-image: radial-gradient(
-    78% 66% at 50% 46%,
-    color-mix(in srgb, var(--pv-tone) 74%, var(--bg)) 0%,
-    color-mix(in srgb, var(--pv-tone) 42%, var(--bg)) 56%,
-    var(--bg) 100%
-  );
-  transition: --pv-tone 0.8s var(--ease);
+  color: var(--pv-ink);
+  background-color: var(--pv-b);
+  background-image: radial-gradient(72% 64% at 50% 46%, var(--pv-a) 0%, var(--pv-b) 100%);
+  transition-property: --pv-a, --pv-b, --pv-ink, --pv-body, --pv-dim, --pv-line, --pv-chip;
+  transition-duration: 0.7s;
+  transition-timing-function: var(--ease);
+}
+
+#modalOverlay[data-stage="white"] {
+  --pv-a: #ffffff;
+  --pv-b: #e3e2de;
+  --pv-ink: #141310;
+  --pv-body: rgba(20, 19, 16, 0.84);
+  --pv-dim: rgba(20, 19, 16, 0.62);
+  --pv-line: rgba(20, 19, 16, 0.26);
+  --pv-chip: rgba(255, 255, 255, 0.6);
+  --pv-fx: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.16));
+  --pv-floor: rgba(0, 0, 0, 0.26);
+}
+
+#modalOverlay[data-stage="grey"] {
+  --pv-a: #707477;
+  --pv-b: #494c4f;
+  --pv-fx: drop-shadow(0 18px 20px rgba(0, 0, 0, 0.3));
+  --pv-floor: rgba(0, 0, 0, 0.34);
 }
 
 #modalOverlay.open {
@@ -3356,7 +3411,7 @@ footer {
 }
 
 #modalOverlay button:focus-visible {
-  outline: 2px solid var(--fg);
+  outline: 2px solid var(--pv-ink);
   outline-offset: 3px;
 }
 
@@ -3400,17 +3455,17 @@ footer {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: var(--fg);
-  background: rgba(10, 10, 9, 0.5);
-  border: 1px solid var(--line-strong);
+  color: var(--pv-ink);
+  background: var(--pv-chip);
+  border: 1px solid var(--pv-line);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  transition-property: background-color, transform;
+  transition-property: transform;
   transition-duration: 0.2s;
 }
 
 .pv-close:hover {
-  background: rgba(10, 10, 9, 0.8);
+  border-color: var(--pv-ink);
 }
 
 .pv-close:active {
@@ -3421,7 +3476,7 @@ footer {
 #modalOverlay .m-cat {
   font-family: var(--body);
   font-size: 14px;
-  color: rgba(245, 242, 234, 0.7);
+  color: var(--pv-dim);
   margin-bottom: 14px;
 }
 
@@ -3432,6 +3487,7 @@ footer {
   font-size: clamp(30px, 3.4vw, 52px);
   line-height: 1.02;
   letter-spacing: -0.02em;
+  color: var(--pv-ink);
   text-wrap: balance;
   margin-bottom: 0;
 }
@@ -3444,14 +3500,14 @@ footer {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgba(245, 242, 234, 0.3) transparent;
+  scrollbar-color: var(--pv-line) transparent;
 }
 
 #modalOverlay .m-desc {
   max-width: 42ch;
   font-size: 15px;
   line-height: 1.7;
-  color: rgba(245, 242, 234, 0.78);
+  color: var(--pv-body);
   text-wrap: pretty;
   margin-bottom: 0;
 }
@@ -3471,14 +3527,13 @@ footer {
   width: 52%;
   height: 5%;
   transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
+  background: radial-gradient(closest-side, var(--pv-floor), transparent);
   filter: blur(6px);
 }
 
 .pv-figure {
   position: absolute;
   inset: 0 0 8%;
-  mix-blend-mode: lighten;
   pointer-events: none;
 }
 
@@ -3489,20 +3544,31 @@ footer {
   object-fit: contain;
   transform: scale(1.3);
   transform-origin: 50% 56%;
+  filter: var(--pv-fx);
 }
 
-/* A real photo (not a studio render): framed, not blended. */
+/* An image with no cutout (e.g. added in the admin): it still has its black
+   background, so blend that away. Only works on the black stage. */
+.pv-figure.is-blend {
+  mix-blend-mode: lighten;
+}
+
+.pv-figure.is-blend img {
+  filter: saturate(1.12) contrast(1.06);
+}
+
+/* A real photo (not a studio render): framed, not cut out. */
 .pv-figure.is-photo {
-  mix-blend-mode: normal;
   inset: 3% 14% 11%;
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
 }
 
 .pv-figure.is-photo img {
   object-fit: cover;
   transform: none;
+  filter: none;
 }
 
 .pv-stage.has-photo .pv-floor {
@@ -3519,7 +3585,6 @@ footer {
   padding: 0;
   background: none;
   border: 0;
-  mix-blend-mode: lighten;
   transition-property: transform, opacity;
   transition-duration: 0.35s;
   transition-timing-function: var(--ease);
@@ -3531,6 +3596,15 @@ footer {
   height: 100%;
   object-fit: contain;
   transform: scale(1.3);
+  filter: var(--pv-fx);
+}
+
+.pv-peek.is-blend {
+  mix-blend-mode: lighten;
+}
+
+.pv-peek.is-blend img {
+  filter: none;
 }
 
 .pv-peek::after {
@@ -3545,7 +3619,6 @@ footer {
 }
 
 .pv-peek.is-photo {
-  mix-blend-mode: normal;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -3553,6 +3626,7 @@ footer {
 .pv-peek.is-photo img {
   object-fit: cover;
   transform: none;
+  filter: none;
 }
 
 .pv-pager {
@@ -3565,8 +3639,8 @@ footer {
   gap: 4px;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(10, 10, 9, 0.55);
-  border: 1px solid var(--line-strong);
+  background: var(--pv-chip);
+  border: 1px solid var(--pv-line);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -3577,13 +3651,13 @@ footer {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: var(--fg);
+  color: var(--pv-ink);
   transition-property: background-color, transform;
   transition-duration: 0.2s;
 }
 
 .pv-pager button:hover {
-  background: rgba(245, 242, 234, 0.14);
+  background: color-mix(in srgb, var(--pv-ink) 12%, transparent);
 }
 
 .pv-pager button:active {
@@ -3597,7 +3671,7 @@ footer {
   font-size: 11px;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  color: rgba(245, 242, 234, 0.72);
+  color: var(--pv-dim);
 }
 
 /* --- right: price, size, bag --- */
@@ -3618,7 +3692,7 @@ footer {
   line-height: 1.05;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
-  color: var(--fg);
+  color: var(--pv-ink);
   margin-bottom: 0;
 }
 
@@ -3626,14 +3700,14 @@ footer {
   order: 2;
   font-size: 0.5em;
   font-weight: 500;
-  color: rgba(245, 242, 234, 0.6);
+  color: var(--pv-dim);
   text-decoration: line-through;
 }
 
 .pv-note {
   margin-top: -14px;
   font-size: 14px;
-  color: var(--riot-2);
+  color: var(--riot);
 }
 
 #modalOverlay .size-row,
@@ -3647,7 +3721,7 @@ footer {
   font-size: 14px;
   letter-spacing: 0;
   text-transform: none;
-  color: rgba(245, 242, 234, 0.72);
+  color: var(--pv-dim);
 }
 
 #modalOverlay .size-opts button {
@@ -3655,15 +3729,15 @@ footer {
   height: 46px;
   padding: 0 15px;
   border-radius: 999px;
-  color: var(--fg);
-  background: rgba(10, 10, 9, 0.35);
-  border: 1px solid rgba(245, 242, 234, 0.26);
+  color: var(--pv-ink);
+  background: var(--pv-chip);
+  border: 1px solid var(--pv-line);
   transition-property: background-color, border-color, color, transform;
   transition-duration: 0.2s;
 }
 
 #modalOverlay .size-opts button:hover {
-  border-color: var(--fg);
+  border-color: var(--pv-ink);
 }
 
 #modalOverlay .size-opts button:active {
@@ -3671,9 +3745,9 @@ footer {
 }
 
 #modalOverlay .size-opts button.active {
-  background: var(--fg);
-  border-color: var(--fg);
-  color: var(--bg);
+  background: var(--pv-ink);
+  border-color: var(--pv-ink);
+  color: var(--pv-a);
 }
 
 #modalOverlay .qty-row {
@@ -3685,20 +3759,34 @@ footer {
 
 #modalOverlay .qty-control {
   border-radius: 999px;
-  background: rgba(10, 10, 9, 0.35);
-  border: 1px solid rgba(245, 242, 234, 0.26);
+  background: var(--pv-chip);
+  border: 1px solid var(--pv-line);
 }
 
 #modalOverlay .qty-control button {
   width: 44px;
   height: 44px;
   background: transparent;
+  color: var(--pv-ink);
+}
+
+#modalOverlay .qty-control span {
+  color: var(--pv-ink);
 }
 
 .pv-cta .btn-primary {
   width: 100%;
   justify-content: center;
   min-height: 54px;
+  background: var(--pv-ink);
+  border-color: var(--pv-ink);
+  color: var(--pv-a);
+}
+
+.pv-cta .btn-primary:hover:not(:disabled) {
+  background: var(--riot);
+  border-color: var(--riot);
+  color: #fff;
 }
 
 /* --- phones and small tablets: product first, details below, bag pinned --- */
@@ -3749,9 +3837,6 @@ footer {
 
   .pv-buy {
     grid-area: buy;
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
     padding-top: 20px;
   }
 
@@ -3769,7 +3854,7 @@ footer {
     bottom: 0;
     margin: 0 -20px;
     padding: 28px 20px max(16px, env(safe-area-inset-bottom));
-    background: linear-gradient(to top, var(--bg) 58%, transparent);
+    background: linear-gradient(to top, var(--pv-b) 58%, transparent);
   }
 }
 

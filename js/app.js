@@ -346,7 +346,6 @@ const SEED_PRODUCTS = [
   },
   {
     id: "p20",
-    accent: "#8a1226", // stage colour in the product viewer (the red flag)
     name: "Red iZi Flag Sleeveless — NOT YOUR TYPE 🚩",
     price: 35000,
     compareAt: null,
