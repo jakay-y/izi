@@ -71,9 +71,42 @@ def glow_radius(dist, peak):
     return FALLBACK_GLOW
 
 
+def cut_plain(rgb, bg_colour):
+    """Flat product shot on a solid, non-black background (white, off-black...).
+
+    No glow to strip: remove everything close to the background colour that
+    touches the border, plus large enclosed pockets of it (e.g. inside a tie loop).
+    """
+    diff = np.abs(rgb - bg_colour).max(axis=2)
+    near = diff <= 24
+    labels, n = ndi.label(near)
+    border = np.unique(
+        np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]])
+    )
+    keep = border[border != 0]
+    if n:
+        sizes = ndi.sum(near, labels, index=np.arange(1, n + 1))
+        big = np.nonzero(sizes >= near.size * 0.002)[0] + 1
+        keep = np.union1d(keep, big)
+    bg = np.isin(labels, keep)
+
+    # soft 1px edge: partial alpha where the colour sits between bg and garment
+    dist = ndi.distance_transform_edt(~bg)
+    alpha = np.clip(dist / 1.5, 0.0, 1.0)
+    alpha = ndi.gaussian_filter(alpha, 0.6)
+    alpha[bg] = 0.0
+    return rgb, alpha, 0
+
+
 def cut(path):
     rgb = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
     peak = rgb.max(axis=2)
+
+    # Not a black-background render? Use the plain cut.
+    edge = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
+    bg_colour = np.median(edge, axis=0)
+    if bg_colour.max() > BG_THRESHOLD:
+        return cut_plain(rgb, bg_colour)
 
     # 1. background = near-black pixels connected to the image border
     labels, _ = ndi.label(peak <= BG_THRESHOLD)

@@ -3509,6 +3509,7 @@ footer {
   line-height: 1.7;
   color: var(--pv-body);
   text-wrap: pretty;
+  white-space: pre-line;
   margin-bottom: 0;
 }
 

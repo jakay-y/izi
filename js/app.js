@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v19";
+const STORAGE_KEY = "izi-catalog-v20";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -451,6 +451,60 @@ const SEED_PRODUCTS = [
     description:
       "Introducing the iZi “Zibra”, a distinctive beanie built around the contrast of black and white, the very colours that form the foundation of iZi. Its distressed zebra-inspired pattern embraces irregularity, making imperfection part of the design rather than something to hide. With no loud logo or unnecessary additions, the piece allows its pattern and silhouette to speak for themselves. Inspired by individuality and the creative vision behind iZi, the Zibra is designed for those who understand that personal style doesn’t always need to announce itself.",
     image: "merch/iZi Zibra Beanie.jpg",
+  },
+  {
+    id: "p26",
+    name: "STEP UR SHiT UP Tee",
+    price: 40000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A bold black graphic tee featuring striking neon-green graffiti lettering and an intense eye illustration.\n\nThe iZi STEP UR SHiT UP Tee brings attitude and street culture together in one bold design. Built around a strong visual statement. Featuring a striking eye graphic framed by graffiti-inspired lettering in vibrant neon green, this piece makes its presence known.",
+    image: "merch/STEP UR SHiT UP Tee.png",
+  },
+  {
+    id: "p27",
+    name: "iZi by Nature Logo Tee",
+    price: 35000,
+    compareAt: null,
+    category: "Tops",
+    subcategory: "Tees",
+    tag: "New",
+    size: "normal",
+    sizes: ["M", "L", "XL", "XXL"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "The first-ever official iZi Logo Tee. Clean, minimal and unmistakably iZi.\n\nIntroducing iZi by Nature, a return to the identity behind the brand.\n\nThe iZi Logo Tee marks the first-ever release of an official minimalist iZi logo design. Made for those who appreciate simplicity and understand that making a statement doesn\u2019t always require doing too much.\n\nFeaturing a clean white base with a distinctive green iZi logo placed on the chest, this tee keeps things simple while staying true to the iZi identity.",
+    image: "merch/iZi by Nature Logo Tee.png",
+  },
+  {
+    id: "p28",
+    name: "iZi Signature Tie",
+    price: 15000,
+    compareAt: null,
+    category: "Accessories",
+    subcategory: "Ties",
+    tag: "New",
+    size: "normal",
+    sizes: ["OS"],
+    shade: null,
+    visible: true,
+    inStock: true,
+    colors: 1,
+    description:
+      "A clean black tie finished with the white iZi logo at the tip. Simple, sharp and unmistakably iZi, made for those who know a statement doesn\u2019t have to be loud.",
+    image: "merch/iZi Signature Tie.png",
   },
 ];
 

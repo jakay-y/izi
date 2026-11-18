@@ -87,5 +87,17 @@ const PV_CUTOUTS = {
   "merch/iZiLifestyle Three-Quarter.png": {
     "src": "merch/cutouts/iZiLifestyle Three-Quarter.webp",
     "stage": "white"
+  },
+  "merch/STEP UR SHiT UP Tee.png": {
+    "src": "merch/cutouts/STEP UR SHiT UP Tee.webp",
+    "stage": "white"
+  },
+  "merch/iZi by Nature Logo Tee.png": {
+    "src": "merch/cutouts/iZi by Nature Logo Tee.webp",
+    "stage": "black"
+  },
+  "merch/iZi Signature Tie.png": {
+    "src": "merch/cutouts/iZi Signature Tie.webp",
+    "stage": "white"
   }
 };
