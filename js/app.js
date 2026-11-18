@@ -3,7 +3,7 @@
    Catalog, cart, checkout, search, account, frequency, studio
    ============================================================ */
 
-const STORAGE_KEY = "izi-catalog-v20";
+const STORAGE_KEY = "izi-catalog-v21";
 const CART_KEY = "izi-cart-v1";
 const ORDERS_KEY = "izi-orders-v1";
 const ACCOUNT_KEY = "izi-account-v1";
@@ -491,7 +491,7 @@ const SEED_PRODUCTS = [
   {
     id: "p28",
     name: "iZi Signature Tie",
-    price: 15000,
+    price: 10000,
     compareAt: null,
     category: "Accessories",
     subcategory: "Ties",
